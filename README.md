@@ -244,13 +244,6 @@ Video Walkthrough (Coming Week 4)
 Case Study (Coming Week 4)
 
 
-<p align="center">
-Built with ❤️ for the e-commerce community
-</p>
-<p align="center">
-© 2024 SmartReview-AI. All rights reserved.
-</p>
-```
 
 To use this README:
 
