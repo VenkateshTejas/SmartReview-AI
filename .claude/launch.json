@@ -9,7 +9,7 @@
     },
     {
       "name": "prod",
-      "url": "https://smartreview-ai-ofmr.onrender.com"
+      "url": "https://smartreview-ai.streamlit.app"
     }
   ]
 }
