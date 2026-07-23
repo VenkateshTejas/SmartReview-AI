@@ -15,36 +15,120 @@ st.set_page_config(page_title="SmartReview-AI", page_icon="🤖", layout="wide")
 SAMPLE_CSV = os.path.join(os.path.dirname(__file__), "..", "data", "sample",
                           "sample_reviews.csv")
 MAX_ROWS = 5000  # cap analysed rows so the hosted demo stays snappy
-SENTIMENT_COLORS = {"Positive": "#16a34a", "Negative": "#dc2626",
-                    "Neutral": "#f59e0b"}
+
+# Dark-tuned semantic palette (lighter shades read better on a dark canvas).
+SENTIMENT_COLORS = {"Positive": "#34D399", "Negative": "#F87171",
+                    "Neutral": "#FBBF24"}
+ACCENT = "#6366F1"
+MUTED = "#94A3B8"
 
 analyzer = ReviewAnalyzer()
 
-# --- Styling -----------------------------------------------------------------
+# --- Styling: "Refined dark" -------------------------------------------------
 st.markdown("""
 <style>
-    .hero {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        padding: 1.6rem 2rem; border-radius: 16px; margin-bottom: 1.2rem;
-        color: white;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+
+    :root {
+        --surface:#141A24; --surface-2:#0D121B; --border:rgba(255,255,255,.08);
+        --muted:#94A3B8; --accent:#6366F1; --text:#E5E7EB;
     }
-    .hero h1 { margin: 0; font-size: 2.1rem; color: white; }
-    .hero p { margin: .35rem 0 0; opacity: .9; font-size: 1.02rem; }
+    html, body, .stApp, [data-testid="stAppViewContainer"],
+    [data-testid="stSidebar"] { font-family:'Inter', sans-serif; }
+
+    /* strip default Streamlit chrome for a cleaner product surface */
+    [data-testid="stHeader"] { background:transparent; }
+    [data-testid="stToolbar"], [data-testid="stDecoration"],
+    #MainMenu, footer { display:none !important; }
+
+    .block-container { padding-top:2rem; padding-bottom:4rem; max-width:1200px; }
+
+    /* hero */
+    .hero { margin:0 0 1.75rem; }
+    .hero-badge {
+        display:inline-flex; align-items:center; gap:.5rem; font-size:.78rem;
+        font-weight:500; color:var(--muted); border:1px solid var(--border);
+        padding:.3rem .75rem; border-radius:999px; margin-bottom:1rem;
+        letter-spacing:.02em;
+    }
+    .hero-badge::before {
+        content:""; width:7px; height:7px; border-radius:50%;
+        background:#34D399; box-shadow:0 0 10px #34D399;
+    }
+    .hero h1 {
+        margin:0; font-size:2.6rem; font-weight:700; letter-spacing:-.03em;
+        line-height:1.05;
+        background:linear-gradient(92deg,#A5B4FC 0%,#818CF8 40%,#22D3EE 100%);
+        -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .hero p { margin:.6rem 0 0; color:var(--muted); font-size:1.08rem; max-width:640px; }
+
+    /* metric cards */
     [data-testid="stMetric"] {
-        background: rgba(128,128,128,0.06);
-        border: 1px solid rgba(128,128,128,0.18);
-        border-radius: 12px; padding: 1rem 1.1rem;
+        background:var(--surface); border:1px solid var(--border);
+        border-radius:14px; padding:1.1rem 1.25rem;
     }
+    [data-testid="stMetricLabel"] p { color:var(--muted); font-size:.82rem;
+        font-weight:500; letter-spacing:.02em; text-transform:uppercase; }
+    [data-testid="stMetricValue"] {
+        font-family:'JetBrains Mono', monospace; font-weight:600;
+        letter-spacing:-.02em; color:var(--text);
+    }
+
+    /* tabs */
+    .stTabs [data-baseweb="tab-list"] { gap:2px; border-bottom:1px solid var(--border); }
+    .stTabs [data-baseweb="tab"] { height:44px; padding:0 16px; color:var(--muted); }
+    .stTabs [aria-selected="true"] { color:var(--text); }
+    .stTabs [data-baseweb="tab-highlight"] { background:var(--accent); }
+
+    /* headings */
+    h1,h2,h3,h4 { letter-spacing:-.01em; }
+
+    /* empty state */
     .empty-card {
-        border: 1px solid rgba(128,128,128,0.2); border-radius: 14px;
-        padding: 1.5rem 1.8rem; background: rgba(128,128,128,0.05);
+        background:var(--surface); border:1px solid var(--border);
+        border-radius:16px; padding:1.75rem 2rem;
     }
-    .empty-card h3 { margin-top: 0; }
-    .stTabs [data-baseweb="tab-list"] { gap: 6px; }
-    .stTabs [data-baseweb="tab"] { height: 46px; padding: 0 18px; }
-    .draft-label { font-weight: 600; color: #4f46e5; margin-bottom: .2rem; }
+    .empty-card h3 { margin-top:0; }
+
+    /* expanders, inputs, buttons */
+    [data-testid="stExpander"] { border:1px solid var(--border);
+        border-radius:12px; background:var(--surface); }
+    .stButton>button, .stDownloadButton>button {
+        border-radius:10px; border:1px solid var(--border); font-weight:500;
+    }
+    [data-baseweb="select"]>div, .stTextArea textarea, .stTextInput input {
+        border-radius:10px !important;
+    }
+
+    /* sidebar */
+    [data-testid="stSidebar"] { background:var(--surface-2);
+        border-right:1px solid var(--border); }
+
+    .draft-label { font-weight:600; color:#A5B4FC; margin-bottom:.3rem;
+        font-size:.9rem; }
+    blockquote { border-left:3px solid var(--accent); color:var(--muted); }
 </style>
 """, unsafe_allow_html=True)
+
+
+def style_fig(fig, show_legend=True):
+    """Apply the dark theme to a Plotly figure so charts match the app."""
+    has_title = bool(fig.layout.title.text)  # avoid rendering a stray "undefined"
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", color=MUTED, size=13),
+        margin=dict(l=0, r=10, t=44 if has_title else 8, b=0),
+        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=MUTED), title_text=""),
+        showlegend=show_legend,
+        xaxis=dict(gridcolor="rgba(255,255,255,.06)",
+                   zerolinecolor="rgba(255,255,255,.08)", linecolor="rgba(255,255,255,.08)"),
+        yaxis=dict(gridcolor="rgba(255,255,255,.06)",
+                   zerolinecolor="rgba(255,255,255,.08)", linecolor="rgba(255,255,255,.08)"),
+    )
+    if has_title:
+        fig.update_layout(title_font=dict(color="#E5E7EB", size=15))
+    return fig
 
 
 # --- Data loading ------------------------------------------------------------
@@ -192,9 +276,10 @@ with st.sidebar:
 # --- Hero --------------------------------------------------------------------
 st.markdown("""
 <div class="hero">
-  <h1>🤖 SmartReview-AI</h1>
-  <p>Turn thousands of customer reviews into decisions — sentiment, issues,
-     priorities and ready-to-send replies.</p>
+  <div class="hero-badge">Business Intelligence</div>
+  <h1>SmartReview-AI</h1>
+  <p>Customer feedback → decisions. Sentiment, recurring issues, and a ranked
+     action queue with a suggested reply for every review.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -243,14 +328,14 @@ with tab1:
     neg_pct = analysis_results["negative_count"] / total * 100
     issues_ct = len([i for i in analysis_results["issues_found"] if i])
     resp_needed = len([s for s in analysis_results["priority_scores"] if s > 50])
-    c1.metric("😊 Positive", analysis_results["positive_count"],
+    c1.metric("Positive", analysis_results["positive_count"],
               f"{pos_pct:.0f}%", delta_color="off")
-    c2.metric("😞 Negative", analysis_results["negative_count"],
+    c2.metric("Negative", analysis_results["negative_count"],
               f"{neg_pct:.0f}%", delta_color="off")
-    c3.metric("⚠️ With issues", issues_ct,
+    c3.metric("With issues", issues_ct,
               f"{issues_ct / total * 100:.0f}%", delta_color="off")
-    c4.metric("🚨 Urgent", urgent_count,
-              f"{resp_needed} need a reply", delta_color="off")
+    c4.metric("Urgent", urgent_count,
+              f"{resp_needed} to reply", delta_color="off")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -259,12 +344,14 @@ with tab1:
                                     columns=["Issue Type", "Count"])
             fig = px.bar(issue_df, x="Count", y="Issue Type", orientation="h",
                          title="Issues requiring attention", color="Count",
-                         color_continuous_scale="Reds")
+                         color_continuous_scale=["#7F1D1D", "#F87171"])
             fig.update_layout(yaxis={"categoryorder": "total ascending"},
-                              margin=dict(l=0, r=0, t=40, b=0))
-            st.plotly_chart(fig, use_container_width=True)
+                              coloraxis_showscale=False)
+            fig.update_traces(marker_line_width=0)
+            st.plotly_chart(style_fig(fig, show_legend=False),
+                            use_container_width=True)
         else:
-            st.info("No specific issues detected. 🎉")
+            st.info("No specific issues detected.")
     with col2:
         sentiment_df = pd.DataFrame({
             "Sentiment": ["Positive", "Negative", "Neutral"],
@@ -272,16 +359,17 @@ with tab1:
                       analysis_results["negative_count"],
                       analysis_results["neutral_count"]],
         })
-        fig = px.pie(sentiment_df, values="Count", names="Sentiment", hole=0.45,
+        fig = px.pie(sentiment_df, values="Count", names="Sentiment", hole=0.55,
                      title="Customer sentiment", color="Sentiment",
                      color_discrete_map=SENTIMENT_COLORS)
-        fig.update_layout(margin=dict(l=0, r=0, t=40, b=0))
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_traces(marker=dict(line=dict(color="#0B0F17", width=3)),
+                          textfont=dict(family="Inter", color="#0B0F17", size=13))
+        st.plotly_chart(style_fig(fig), use_container_width=True)
 
 # --- Tab 2: Priority queue + AI replies --------------------------------------
 with tab2:
     st.subheader("🚨 Reviews to action first")
-    st.caption("Ranked by priority score. Each has an editable, AI-drafted reply.")
+    st.caption("Ranked by priority score. Each has an editable, suggested reply.")
 
     if priority_reviews.empty:
         st.info("No priority reviews found.")
@@ -367,9 +455,15 @@ with tab4:
     if word_freq:
         st.markdown("#### Most mentioned words")
         word_df = pd.DataFrame(word_freq.items(), columns=["Word", "Frequency"])
-        fig = px.treemap(word_df, path=["Word"], values="Frequency")
-        fig.update_layout(margin=dict(l=0, r=0, t=10, b=0))
-        st.plotly_chart(fig, use_container_width=True)
+        fig = px.treemap(word_df, path=["Word"], values="Frequency",
+                         color="Frequency",
+                         color_continuous_scale=["#1E293B", "#6366F1"])
+        fig.update_traces(marker=dict(cornerradius=6,
+                                      line=dict(color="#0B0F17", width=2)),
+                          textfont=dict(family="Inter", color="#E5E7EB", size=14))
+        fig.update_layout(coloraxis_showscale=False)
+        st.plotly_chart(style_fig(fig, show_legend=False),
+                        use_container_width=True)
 
     date_col = next((c for c in df.columns if "date" in c.lower()), None)
     if date_col:
@@ -384,8 +478,8 @@ with tab4:
                 st.markdown("#### Sentiment trend over time")
                 fig = px.line(daily, x=date_col, y="count", color="sentiment",
                               color_discrete_map=SENTIMENT_COLORS, markers=True)
-                fig.update_layout(margin=dict(l=0, r=0, t=10, b=0))
-                st.plotly_chart(fig, use_container_width=True)
+                fig.update_traces(line=dict(width=2.5))
+                st.plotly_chart(style_fig(fig), use_container_width=True)
         except Exception:
             pass
 

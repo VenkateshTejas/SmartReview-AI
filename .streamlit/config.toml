@@ -1,0 +1,15 @@
+# SmartReview-AI — "Refined dark" theme.
+# This is the reusable base identity: dark canvas, indigo accent, Inter type.
+[theme]
+base = "dark"
+primaryColor = "#6366F1"
+backgroundColor = "#0B0F17"
+secondaryBackgroundColor = "#141A24"
+textColor = "#E5E7EB"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
