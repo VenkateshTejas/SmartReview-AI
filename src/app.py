@@ -176,6 +176,9 @@ st.markdown("""
     [class*="st-key-schip_Negative"] button { border-left:3px solid #EF4444; }
     [class*="st-key-schip_Neutral"]  button { border-left:3px solid #F59E0B; }
 
+    /* hide Plotly's hover toolbar — it overlaps the chart titles */
+    .modebar-container, .modebar { display:none !important; }
+
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation:none !important; transition:none !important; }
     }
@@ -687,6 +690,8 @@ if nav == "Export":
                            f"priority_reviews_{stamp}.csv", "text/csv",
                            use_container_width=True)
 
+    pos_pct = analysis_results["positive_count"] / total * 100
+    neg_pct = analysis_results["negative_count"] / total * 100
     top_issues = "\n".join(f"- {k}: {v} occurrences"
                            for k, v in list(analysis_results["issue_summary"].items())[:5])
     recs = "\n".join(f"- {r}" for r in (insights["recommendations"] if insights else []))
