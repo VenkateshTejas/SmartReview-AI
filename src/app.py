@@ -171,6 +171,11 @@ st.markdown("""
         color:var(--muted); font-size:.8rem; margin-top:.15rem;
     }
 
+    /* sentiment chips under the donut, colour-coded to the wedges */
+    [class*="st-key-schip_Positive"] button { border-left:3px solid #10B981; }
+    [class*="st-key-schip_Negative"] button { border-left:3px solid #EF4444; }
+    [class*="st-key-schip_Neutral"]  button { border-left:3px solid #F59E0B; }
+
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation:none !important; transition:none !important; }
     }
@@ -198,7 +203,7 @@ def style_fig(fig, show_legend=True):
 
 
 def open_detail(category):
-    """Tile click -> jump to Analysis Details with the table pre-filtered."""
+    """Tile/chip click -> jump to Analysis Details with the table pre-filtered."""
     st.session_state.nav = "Analysis Details"
     st.session_state.detail_filter = category
     st.session_state.scroll_to_table = True
@@ -481,8 +486,17 @@ if nav == "Dashboard":
             fig.update_layout(yaxis={"categoryorder": "total ascending"},
                               coloraxis_showscale=False)
             fig.update_traces(marker_line_width=0)
-            st.plotly_chart(style_fig(fig, show_legend=False),
-                            use_container_width=True)
+            ev = st.plotly_chart(style_fig(fig, show_legend=False),
+                            use_container_width=True, on_select="rerun",
+                            key="bar_sel")
+            st.caption("Click a bar to open its reviews.")
+            _bpts = (ev or {}).get("selection", {}).get("points", [])
+            if _bpts:
+                _issue = _bpts[0].get("label") or _bpts[0].get("y")
+                if _issue and st.session_state.get("_bar_handled") != _issue:
+                    st.session_state._bar_handled = _issue
+                    open_detail(_issue)
+                    st.rerun()
         else:
             st.info("No specific issues detected.")
     with col2:
@@ -498,6 +512,12 @@ if nav == "Dashboard":
         fig.update_traces(marker=dict(line=dict(color="#FFFFFF", width=3)),
                           textfont=dict(family="Inter", color="#0F172A", size=13))
         st.plotly_chart(style_fig(fig), use_container_width=True)
+        chips = [("Positive", analysis_results["positive_count"]),
+                 ("Negative", analysis_results["negative_count"]),
+                 ("Neutral", analysis_results["neutral_count"])]
+        for _c, (_lbl, _n) in zip(st.columns(3), chips):
+            _c.button(f"{_lbl} · {_n}", key=f"schip_{_lbl}", on_click=open_detail,
+                      args=(_lbl,), use_container_width=True)
 
 # --- Priority queue + suggested replies --------------------------------------
 if nav == "Priority & Replies":
@@ -617,7 +637,7 @@ if nav == "Analysis Details":
 
     st.markdown('<div id="reviews-table"></div>', unsafe_allow_html=True)
     st.markdown("#### All reviews with analysis")
-    detail_opts = ["All", "Positive", "Negative", "With issues", "Urgent"]
+    detail_opts = ["All", "Positive", "Negative", "Neutral", "With issues", "Urgent"]
     st.session_state.setdefault("detail_filter", "All")
     for _c, _name in zip(st.columns(len(detail_opts)), detail_opts):
         _c.button(_name, key=f"dfbtn_{_name}", on_click=_set,
@@ -630,14 +650,14 @@ if nav == "Analysis Details":
     display_df["Priority"] = analysis_results["priority_scores"]
     display_df["Issues"] = [", ".join(i) if i else "None"
                             for i in analysis_results["issues_found"]]
-    if flt == "Positive":
-        display_df = display_df[display_df["Sentiment"] == "Positive"]
-    elif flt == "Negative":
-        display_df = display_df[display_df["Sentiment"] == "Negative"]
+    if flt in ("Positive", "Negative", "Neutral"):
+        display_df = display_df[display_df["Sentiment"] == flt]
     elif flt == "With issues":
         display_df = display_df[display_df["Issues"] != "None"]
     elif flt == "Urgent":
         display_df = display_df[display_df.index.isin(analysis_results["urgent_indices"])]
+    elif flt in analyzer.ISSUE_RULES:      # a specific issue category (bar click)
+        display_df = display_df[[flt in i for i in analysis_results["issues_found"]]]
 
     suffix = "" if flt == "All" else f" · {flt}"
     st.caption(f"Showing {len(display_df):,} of {total:,} reviews{suffix}")
