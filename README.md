@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.49-red.svg)](https://streamlit.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](https://github.com/VenkateshTejas/smartreview-ai)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-online-brightgreen.svg)](https://smartreview-ai-ofmr.onrender.com/)
 
 A review-analysis platform that turns customer feedback into prioritized, actionable insights — sentiment, recurring issues, and a triage queue with suggested replies.
 
@@ -248,6 +248,6 @@ Week 4: ░░░░░░░░░░░░░░░░░░░░ 0% Planned
 Overall: ████████░░░░░░░░░░░░ 35% Complete
 🔗 Links
 
-Live Demo (Coming Week 4)
-Video Walkthrough (Coming Week 4)
-Case Study (Coming Week 4)
+- **Live demo:** https://smartreview-ai-ofmr.onrender.com/ (hosted free on Render; the first load after a period of inactivity takes ~30–60s while the free instance wakes up)
+- Video walkthrough — coming soon
+- Case study — coming soon

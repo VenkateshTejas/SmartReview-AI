@@ -6,6 +6,10 @@
       "runtimeExecutable": "venv/bin/streamlit",
       "runtimeArgs": ["run", "src/app.py", "--server.headless", "true", "--server.port", "8501"],
       "port": 8501
+    },
+    {
+      "name": "prod",
+      "url": "https://smartreview-ai-ofmr.onrender.com"
     }
   ]
 }
