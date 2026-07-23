@@ -36,6 +36,19 @@ st.markdown("""
     html, body, .stApp, [data-testid="stAppViewContainer"],
     [data-testid="stSidebar"] { font-family:'Inter', sans-serif; }
 
+    /* ambient depth: subtle indigo + cyan glows on the dark canvas */
+    .stApp {
+        background-image:
+            radial-gradient(900px 520px at 12% -8%, rgba(99,102,241,.14), transparent 60%),
+            radial-gradient(760px 520px at 100% -6%, rgba(34,211,238,.08), transparent 55%);
+        background-attachment:fixed;
+    }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:none;} }
+    @keyframes shimmer { to { background-position:200% center; } }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.45);} 50%{box-shadow:0 0 0 7px rgba(52,211,153,0);} }
+    @keyframes grow { from{transform:scaleY(0);} to{transform:scaleY(1);} }
+
     /* strip default Streamlit chrome for a cleaner product surface */
     [data-testid="stHeader"] { background:transparent; }
     [data-testid="stToolbar"], [data-testid="stDecoration"],
@@ -44,29 +57,40 @@ st.markdown("""
     .block-container { padding-top:2rem; padding-bottom:4rem; max-width:1200px; }
 
     /* hero */
-    .hero { margin:0 0 1.75rem; }
+    .hero { margin:0 0 1.75rem; animation:fadeUp .5s ease both; }
     .hero-badge {
         display:inline-flex; align-items:center; gap:.5rem; font-size:.78rem;
         font-weight:500; color:var(--muted); border:1px solid var(--border);
-        padding:.3rem .75rem; border-radius:999px; margin-bottom:1rem;
-        letter-spacing:.02em;
+        padding:.3rem .75rem; border-radius:999px; margin-bottom:1.1rem;
+        letter-spacing:.02em; background:rgba(255,255,255,.02);
     }
     .hero-badge::before {
-        content:""; width:7px; height:7px; border-radius:50%;
-        background:#34D399; box-shadow:0 0 10px #34D399;
+        content:""; width:7px; height:7px; border-radius:50%; background:#34D399;
+        animation:pulse 2.4s ease-in-out infinite;
     }
+    .hero-title { display:flex; align-items:center; gap:.85rem; }
+    .hero-mark { flex:none; }
+    .hero-mark rect { transform-box:fill-box; transform-origin:bottom;
+        animation:grow .6s cubic-bezier(.2,.8,.2,1) both; }
+    .hero-mark rect:nth-of-type(2){ animation-delay:.08s; }
+    .hero-mark rect:nth-of-type(3){ animation-delay:.16s; }
     .hero h1 {
-        margin:0; font-size:2.6rem; font-weight:700; letter-spacing:-.03em;
-        line-height:1.05;
-        background:linear-gradient(92deg,#A5B4FC 0%,#818CF8 40%,#22D3EE 100%);
-        -webkit-background-clip:text; background-clip:text; color:transparent;
+        margin:0; font-size:2.6rem; font-weight:700; letter-spacing:-.03em; line-height:1.05;
+        background:linear-gradient(92deg,#A5B4FC 0%,#818CF8 35%,#22D3EE 70%,#A5B4FC 100%);
+        background-size:200% auto; -webkit-background-clip:text; background-clip:text;
+        color:transparent; animation:shimmer 7s linear infinite;
     }
     .hero p { margin:.6rem 0 0; color:var(--muted); font-size:1.08rem; max-width:640px; }
 
-    /* metric cards */
+    /* metric cards + hover lift */
     [data-testid="stMetric"] {
         background:var(--surface); border:1px solid var(--border);
-        border-radius:14px; padding:1.1rem 1.25rem;
+        border-radius:14px; padding:1.1rem 1.25rem; animation:fadeUp .5s ease both;
+        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    [data-testid="stMetric"]:hover {
+        transform:translateY(-3px); border-color:rgba(99,102,241,.55);
+        box-shadow:0 10px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(99,102,241,.18);
     }
     [data-testid="stMetricLabel"] p { color:var(--muted); font-size:.82rem;
         font-weight:500; letter-spacing:.02em; text-transform:uppercase; }
@@ -77,7 +101,9 @@ st.markdown("""
 
     /* tabs */
     .stTabs [data-baseweb="tab-list"] { gap:2px; border-bottom:1px solid var(--border); }
-    .stTabs [data-baseweb="tab"] { height:44px; padding:0 16px; color:var(--muted); }
+    .stTabs [data-baseweb="tab"] { height:44px; padding:0 16px; color:var(--muted);
+        transition:color .15s ease; }
+    .stTabs [data-baseweb="tab"]:hover { color:var(--text); }
     .stTabs [aria-selected="true"] { color:var(--text); }
     .stTabs [data-baseweb="tab-highlight"] { background:var(--accent); }
 
@@ -87,15 +113,22 @@ st.markdown("""
     /* empty state */
     .empty-card {
         background:var(--surface); border:1px solid var(--border);
-        border-radius:16px; padding:1.75rem 2rem;
+        border-radius:16px; padding:1.75rem 2rem; animation:fadeUp .5s ease both;
     }
     .empty-card h3 { margin-top:0; }
 
-    /* expanders, inputs, buttons */
+    /* expanders, inputs, buttons + hover */
     [data-testid="stExpander"] { border:1px solid var(--border);
-        border-radius:12px; background:var(--surface); }
+        border-radius:12px; background:var(--surface);
+        transition:border-color .18s ease; }
+    [data-testid="stExpander"]:hover { border-color:rgba(99,102,241,.4); }
     .stButton>button, .stDownloadButton>button {
         border-radius:10px; border:1px solid var(--border); font-weight:500;
+        transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .stButton>button:hover, .stDownloadButton>button:hover {
+        transform:translateY(-1px); border-color:rgba(99,102,241,.6);
+        box-shadow:0 6px 18px rgba(99,102,241,.15);
     }
     [data-baseweb="select"]>div, .stTextArea textarea, .stTextInput input {
         border-radius:10px !important;
@@ -108,6 +141,10 @@ st.markdown("""
     .draft-label { font-weight:600; color:#A5B4FC; margin-bottom:.3rem;
         font-size:.9rem; }
     blockquote { border-left:3px solid var(--accent); color:var(--muted); }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation:none !important; transition:none !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -277,7 +314,17 @@ with st.sidebar:
 st.markdown("""
 <div class="hero">
   <div class="hero-badge">Business Intelligence</div>
-  <h1>SmartReview-AI</h1>
+  <div class="hero-title">
+    <svg class="hero-mark" width="38" height="38" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#818CF8"/><stop offset="1" stop-color="#22D3EE"/>
+      </linearGradient></defs>
+      <rect x="4" y="22" width="8" height="14" rx="2.5" fill="url(#mark)"/>
+      <rect x="16" y="13" width="8" height="23" rx="2.5" fill="url(#mark)"/>
+      <rect x="28" y="5" width="8" height="31" rx="2.5" fill="url(#mark)"/>
+    </svg>
+    <h1>SmartReview-AI</h1>
+  </div>
   <p>Customer feedback → decisions. Sentiment, recurring issues, and a ranked
      action queue with a suggested reply for every review.</p>
 </div>
