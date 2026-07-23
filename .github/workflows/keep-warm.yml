@@ -1,0 +1,31 @@
+name: Keep Render app warm
+
+# The Render free tier sleeps after ~15 min idle; waking it takes ~30-60s and
+# can make the first page load fail with "importing a module script failed"
+# (a chunk request fails mid-wake). Pinging the app on a schedule keeps it
+# awake so visitors get an instant, clean load.
+#
+# Window below is ~18h/day (UTC) so it stays well under Render's ~750 free
+# instance-hours/month. Widen the `cron` hours to 0-23 for 24/7 (uses ~744h —
+# fine only if this is your ONLY free Render service). Times are UTC.
+
+on:
+  schedule:
+    - cron: "*/14 11-23,0-4 * * *"   # ~every 14 min, ~6am-midnight US Eastern
+  workflow_dispatch:                 # allow manual runs from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the app until it responds
+        run: |
+          URL="https://smartreview-ai-ofmr.onrender.com/_stcore/health"
+          for i in 1 2 3 4; do
+            code=$(curl -fsS -L -m 90 -o /dev/null -w "%{http_code}" "$URL") || code=000
+            echo "attempt $i -> HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 20   # give a cold instance time to finish waking
+          done
+          echo "warning: app did not return 200 after retries (may be a real outage)"
+          exit 0       # don't fail the workflow on a transient miss
