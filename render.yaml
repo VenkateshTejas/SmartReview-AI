@@ -1,0 +1,12 @@
+# Render Blueprint — deploy SmartReview-AI on Render's free tier.
+# In the Render dashboard: New +  ->  Blueprint  ->  pick this repo.
+services:
+  - type: web
+    name: smartreview-ai
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run src/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --server.enableCORS false
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"

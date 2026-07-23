@@ -1,15 +1,3 @@
----
-title: SmartReview AI
-emoji: 🤖
-colorFrom: indigo
-colorTo: purple
-sdk: streamlit
-sdk_version: 1.49.1
-app_file: src/app.py
-pinned: false
-license: mit
----
-
 # 🤖 SmartReview-AI
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
@@ -132,10 +120,10 @@ Navigate to http://localhost:8501
 
 ### ☁️ Deploy for free
 
-This repo is ready for both **Streamlit Community Cloud** (main file `src/app.py`)
-and **Hugging Face Spaces**. For a Space, the config block at the top of this
-README (`sdk: streamlit`, `app_file: src/app.py`) tells HF how to run it — just
-create a Streamlit Space and push this repo to its git remote.
+- **Streamlit Community Cloud** — main file `src/app.py`, branch `main`.
+- **Render** — a [`render.yaml`](render.yaml) blueprint is included. In the Render
+  dashboard choose **New → Blueprint** and pick this repo; it builds on the free
+  tier. (Free services sleep after ~15 min idle and cold-start on the next visit.)
 
 📈 Usage Guide
 
