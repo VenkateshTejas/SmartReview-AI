@@ -17,31 +17,31 @@ SAMPLE_CSV = os.path.join(os.path.dirname(__file__), "..", "data", "sample",
                           "sample_reviews.csv")
 MAX_ROWS = 5000  # cap analysed rows so the hosted demo stays snappy
 
-# Dark-tuned semantic palette (lighter shades read better on a dark canvas).
-SENTIMENT_COLORS = {"Positive": "#34D399", "Negative": "#F87171",
-                    "Neutral": "#FBBF24"}
+# Semantic palette tuned for a light canvas.
+SENTIMENT_COLORS = {"Positive": "#10B981", "Negative": "#EF4444",
+                    "Neutral": "#F59E0B"}
 ACCENT = "#6366F1"
-MUTED = "#94A3B8"
+MUTED = "#64748B"
 
 analyzer = ReviewAnalyzer()
 
-# --- Styling: "Refined dark" -------------------------------------------------
+# --- Styling: "Refined light" ------------------------------------------------
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
     :root {
-        --surface:#141A24; --surface-2:#0D121B; --border:rgba(255,255,255,.08);
-        --muted:#94A3B8; --accent:#6366F1; --text:#E5E7EB;
+        --surface:#FFFFFF; --surface-2:#FFFFFF; --border:rgba(15,23,42,.09);
+        --muted:#64748B; --accent:#6366F1; --text:#0F172A;
     }
     html, body, .stApp, [data-testid="stAppViewContainer"],
     [data-testid="stSidebar"] { font-family:'Inter', sans-serif; }
 
-    /* ambient depth: subtle indigo + cyan glows on the dark canvas */
+    /* faint brand tint at the top of the light-silver canvas */
     .stApp {
         background-image:
-            radial-gradient(900px 520px at 12% -8%, rgba(99,102,241,.14), transparent 60%),
-            radial-gradient(760px 520px at 100% -6%, rgba(34,211,238,.08), transparent 55%);
+            radial-gradient(1100px 460px at 15% -14%, rgba(99,102,241,.05), transparent 60%),
+            radial-gradient(900px 460px at 100% -12%, rgba(14,165,233,.04), transparent 55%);
         background-attachment:fixed;
     }
 
@@ -63,7 +63,7 @@ st.markdown("""
         display:inline-flex; align-items:center; gap:.5rem; font-size:.78rem;
         font-weight:500; color:var(--muted); border:1px solid var(--border);
         padding:.3rem .75rem; border-radius:999px; margin-bottom:1.1rem;
-        letter-spacing:.02em; background:rgba(255,255,255,.02);
+        letter-spacing:.02em; background:rgba(15,23,42,.02);
     }
     .hero-badge::before {
         content:""; width:7px; height:7px; border-radius:50%; background:#34D399;
@@ -77,7 +77,7 @@ st.markdown("""
     .hero-mark rect:nth-of-type(3){ animation-delay:.16s; }
     .hero h1 {
         margin:0; font-size:2.6rem; font-weight:700; letter-spacing:-.03em; line-height:1.05;
-        background:linear-gradient(92deg,#A5B4FC 0%,#818CF8 35%,#22D3EE 70%,#A5B4FC 100%);
+        background:linear-gradient(92deg,#4F46E5 0%,#6366F1 35%,#0EA5E9 70%,#4F46E5 100%);
         background-size:200% auto; -webkit-background-clip:text; background-clip:text;
         color:transparent; animation:shimmer 7s linear infinite;
     }
@@ -87,11 +87,12 @@ st.markdown("""
     [data-testid="stMetric"] {
         background:var(--surface); border:1px solid var(--border);
         border-radius:14px; padding:1.1rem 1.25rem; animation:fadeUp .5s ease both;
+        box-shadow:0 1px 2px rgba(15,23,42,.04);
         transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
     [data-testid="stMetric"]:hover {
         transform:translateY(-3px); border-color:rgba(99,102,241,.55);
-        box-shadow:0 10px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(99,102,241,.18);
+        box-shadow:0 10px 28px rgba(15,23,42,.1), 0 0 0 1px rgba(99,102,241,.18);
     }
     [data-testid="stMetricLabel"] p { color:var(--muted); font-size:.82rem;
         font-weight:500; letter-spacing:.02em; text-transform:uppercase; }
@@ -139,7 +140,7 @@ st.markdown("""
     [data-testid="stSidebar"] { background:var(--surface-2);
         border-right:1px solid var(--border); }
 
-    .draft-label { font-weight:600; color:#A5B4FC; margin-bottom:.3rem;
+    .draft-label { font-weight:600; color:#4F46E5; margin-bottom:.3rem;
         font-size:.9rem; }
     blockquote { border-left:3px solid var(--accent); color:var(--muted); }
 
@@ -149,11 +150,12 @@ st.markdown("""
         gap:.2rem; text-align:left; background:var(--surface);
         border:1px solid var(--border); border-radius:14px;
         padding:1.05rem 1.2rem; min-height:118px;
+        box-shadow:0 1px 2px rgba(15,23,42,.04);
         transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
     [class*="st-key-kpitile_"] button:hover {
         transform:translateY(-3px); border-color:rgba(99,102,241,.55);
-        box-shadow:0 10px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(99,102,241,.18);
+        box-shadow:0 10px 28px rgba(15,23,42,.1), 0 0 0 1px rgba(99,102,241,.18);
     }
     [class*="st-key-kpitile_"] button [data-testid="stMarkdownContainer"] { width:100%; }
     [class*="st-key-kpitile_"] button p { margin:0; text-align:left; }
@@ -185,13 +187,13 @@ def style_fig(fig, show_legend=True):
         margin=dict(l=0, r=10, t=44 if has_title else 8, b=0),
         legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=MUTED), title_text=""),
         showlegend=show_legend,
-        xaxis=dict(gridcolor="rgba(255,255,255,.06)",
-                   zerolinecolor="rgba(255,255,255,.08)", linecolor="rgba(255,255,255,.08)"),
-        yaxis=dict(gridcolor="rgba(255,255,255,.06)",
-                   zerolinecolor="rgba(255,255,255,.08)", linecolor="rgba(255,255,255,.08)"),
+        xaxis=dict(gridcolor="rgba(15,23,42,.06)",
+                   zerolinecolor="rgba(15,23,42,.1)", linecolor="rgba(15,23,42,.1)"),
+        yaxis=dict(gridcolor="rgba(15,23,42,.06)",
+                   zerolinecolor="rgba(15,23,42,.1)", linecolor="rgba(15,23,42,.1)"),
     )
     if has_title:
-        fig.update_layout(title_font=dict(color="#E5E7EB", size=15))
+        fig.update_layout(title_font=dict(color="#0F172A", size=15))
     return fig
 
 
@@ -475,7 +477,7 @@ if nav == "Dashboard":
                                     columns=["Issue Type", "Count"])
             fig = px.bar(issue_df, x="Count", y="Issue Type", orientation="h",
                          title="Issues requiring attention", color="Count",
-                         color_continuous_scale=["#7F1D1D", "#F87171"])
+                         color_continuous_scale=["#FCA5A5", "#DC2626"])
             fig.update_layout(yaxis={"categoryorder": "total ascending"},
                               coloraxis_showscale=False)
             fig.update_traces(marker_line_width=0)
@@ -493,8 +495,8 @@ if nav == "Dashboard":
         fig = px.pie(sentiment_df, values="Count", names="Sentiment", hole=0.55,
                      title="Customer sentiment", color="Sentiment",
                      color_discrete_map=SENTIMENT_COLORS)
-        fig.update_traces(marker=dict(line=dict(color="#0B0F17", width=3)),
-                          textfont=dict(family="Inter", color="#0B0F17", size=13))
+        fig.update_traces(marker=dict(line=dict(color="#FFFFFF", width=3)),
+                          textfont=dict(family="Inter", color="#0F172A", size=13))
         st.plotly_chart(style_fig(fig), use_container_width=True)
 
 # --- Priority queue + suggested replies --------------------------------------
@@ -587,10 +589,10 @@ if nav == "Analysis Details":
         word_df = pd.DataFrame(word_freq.items(), columns=["Word", "Frequency"])
         fig = px.treemap(word_df, path=["Word"], values="Frequency",
                          color="Frequency",
-                         color_continuous_scale=["#1E293B", "#6366F1"])
+                         color_continuous_scale=["#EEF2FF", "#A5B4FC"])
         fig.update_traces(marker=dict(cornerradius=6,
-                                      line=dict(color="#0B0F17", width=2)),
-                          textfont=dict(family="Inter", color="#E5E7EB", size=14))
+                                      line=dict(color="#FFFFFF", width=2)),
+                          textfont=dict(family="Inter", color="#1E293B", size=14))
         fig.update_layout(coloraxis_showscale=False)
         st.plotly_chart(style_fig(fig, show_legend=False),
                         use_container_width=True)

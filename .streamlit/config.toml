@@ -1,11 +1,11 @@
-# SmartReview-AI — "Refined dark" theme.
-# This is the reusable base identity: dark canvas, indigo accent, Inter type.
+# SmartReview-AI — "Refined light" theme.
+# Light-silver canvas, white surfaces, indigo accent, Inter type.
 [theme]
-base = "dark"
+base = "light"
 primaryColor = "#6366F1"
-backgroundColor = "#0B0F17"
-secondaryBackgroundColor = "#141A24"
-textColor = "#E5E7EB"
+backgroundColor = "#F4F6FA"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#0F172A"
 font = "sans serif"
 
 [client]
