@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 from datetime import datetime
-from final_analyzer import FinalAnalyzer as SimpleAnalyzer
+from analyzer import ReviewAnalyzer as SimpleAnalyzer
 
 st.set_page_config(page_title="SmartReview-AI", page_icon="📊", layout="wide")
 

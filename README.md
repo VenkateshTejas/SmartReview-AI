@@ -48,44 +48,32 @@ SmartReview-AI provides:
 
 | Component | Technology |
 |-----------|-----------|
-| **Backend** | Python 3.12 |
-| **AI/ML** | Hugging Face Transformers, scikit-learn |
-| **NLP** | spaCy, NLTK |
+| **Language** | Python 3.12 |
+| **Sentiment / NLP** | VADER (`vaderSentiment`), with a TextBlob fallback |
 | **Data Processing** | Pandas, NumPy |
 | **Web Framework** | Streamlit |
-| **Visualization** | Plotly, Matplotlib |
+| **Visualization** | Plotly |
 | **Cloud** | Streamlit Cloud |
 | **Version Control** | Git/GitHub |
 
 ## 📁 Project Structure
+```
 smartreview-ai/
 │
-├── 📊 data/                  # Dataset directory (gitignored)
-│   └── .gitkeep
+├── 📂 src/                   # Application code
+│   ├── app.py               # Streamlit UI: dashboard, priority queue, insights, export
+│   └── analyzer.py          # ReviewAnalyzer: sentiment, issue detection, priority scoring
 │
-├── 🎨 demo/                  # Application code
-│   ├── app.py               # Main Streamlit application
-│   ├── analysis.py          # AI/ML analysis functions
-│   └── utils.py             # Helper functions
+├── 📊 data/                  # sample / uploads / exports (CSV files gitignored)
 │
-├── 📚 docs/                  # Documentation
-│   ├── week-1/              # Discovery phase
-│   │   ├── project-charter.md
-│   │   ├── user-personas.md
-│   │   ├── user-stories.md
-│   │   ├── market-research.md
-│   │   └── competitive-analysis.md
-│   ├── week-2/              # Design phase
-│   ├── week-3/              # Development phase
-│   └── week-4/              # Deployment phase
-│
-├── 🧪 tests/                 # Test files
-│   └── test_ai.py
+├── 📚 docs/                  # Product-management documentation
+│   ├── week-1/              # Discovery: charter, personas, user stories, research
+│   └── week-2/              # Design: PRD, architecture, WBS, timeline, metrics
 │
 ├── 📝 .gitignore
 ├── 📖 README.md
-├── 📦 requirements.txt
-└── 🚀 LICENSE
+└── 📦 requirements.txt
+```
 
 ## 🚀 Quick Start
 
@@ -121,7 +109,9 @@ kaggle datasets download -d kritanjalijain/amazon-reviews
 
 Run the application
 
-bashstreamlit run demo/app.py
+```bash
+streamlit run src/app.py
+```
 
 Open browser
 Navigate to http://localhost:8501
@@ -195,10 +185,14 @@ Demo video creation
 Launch preparation
 
 🧪 Testing
-Run test suite:
-bashpython -m pytest tests/
-Check environment:
-bashpython test_ai.py
+An automated pytest suite is planned for the development phase (Week 3). Until then, you can sanity-check the analyzer directly:
+
+```bash
+python -c "import sys; sys.path.insert(0,'src'); import pandas as pd; from analyzer import ReviewAnalyzer; \
+df=pd.DataFrame({'review_text':['Broke after 2 days, want a refund']}); \
+print(ReviewAnalyzer().analyze_text(df,'review_text'))"
+```
+
 📖 Documentation
 
 Project Charter
@@ -242,16 +236,3 @@ Overall: ████████░░░░░░░░░░░░ 35% Comple
 Live Demo (Coming Week 4)
 Video Walkthrough (Coming Week 4)
 Case Study (Coming Week 4)
-
-
-
-To use this README:
-
-Copy everything in the code block above
-Replace your current README.md content
-Save the file
-Commit and push:
-
-bashgit add README.md
-git commit -m "Update README with complete professional documentation"
-git push

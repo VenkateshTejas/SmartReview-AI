@@ -2,6 +2,7 @@
 venv/
 env/
 ENV/
+fresh_env/
 
 # Python
 __pycache__/
@@ -22,6 +23,9 @@ data/*.xlsx
 .idea/
 *.swp
 *.swo
+
+# Claude Code (machine-specific)
+.claude/settings.local.json
 
 # Jupyter
 .ipynb_checkpoints/
