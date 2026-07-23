@@ -398,10 +398,12 @@ rating_col = analyze_columns(df)["rating_column"]
 NAV = ["Welcome", "Dashboard", "Priority & Replies", "Insights & Actions",
        "Analysis Details", "Export"]
 st.session_state.setdefault("nav", "Welcome")
-for _c, _name in zip(st.columns(len(NAV)), NAV):
-    _c.button(_name, key=f"navbtn_{_name}", on_click=_set, args=("nav", _name),
-              use_container_width=True,
-              type="primary" if st.session_state.nav == _name else "secondary")
+# Hide the section nav on the Welcome landing page — you enter via the CTA.
+if st.session_state.nav != "Welcome":
+    for _c, _name in zip(st.columns(len(NAV)), NAV):
+        _c.button(_name, key=f"navbtn_{_name}", on_click=_set, args=("nav", _name),
+                  use_container_width=True,
+                  type="primary" if st.session_state.nav == _name else "secondary")
 nav = st.session_state.nav
 
 # --- Welcome -----------------------------------------------------------------
