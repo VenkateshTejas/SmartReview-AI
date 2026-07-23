@@ -142,17 +142,30 @@ st.markdown("""
         font-size:.9rem; }
     blockquote { border-left:3px solid var(--accent); color:var(--muted); }
 
-    /* clickable KPI tiles: an invisible button overlays each metric card */
-    [class*="st-key-kpi_"] { position:relative; }
-    [class*="st-key-kpi_"] [data-testid="stButton"] {
-        position:absolute; inset:0; margin:0; z-index:3;
+    /* clickable KPI tiles: real buttons styled to look like metric cards */
+    [class*="st-key-kpitile_"] button {
+        display:flex; flex-direction:column; align-items:flex-start;
+        gap:.2rem; text-align:left; background:var(--surface);
+        border:1px solid var(--border); border-radius:14px;
+        padding:1.05rem 1.2rem; min-height:118px;
+        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
-    [class*="st-key-kpi_"] [data-testid="stButton"] > button {
-        width:100%; height:100%; opacity:0; cursor:pointer; border:none;
-    }
-    [class*="st-key-kpi_"]:hover [data-testid="stMetric"] {
+    [class*="st-key-kpitile_"] button:hover {
         transform:translateY(-3px); border-color:rgba(99,102,241,.55);
         box-shadow:0 10px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(99,102,241,.18);
+    }
+    [class*="st-key-kpitile_"] button [data-testid="stMarkdownContainer"] { width:100%; }
+    [class*="st-key-kpitile_"] button p { margin:0; text-align:left; }
+    [class*="st-key-kpitile_"] button p:nth-of-type(1) {
+        color:var(--muted); font-size:.75rem; font-weight:600;
+        letter-spacing:.05em; text-transform:uppercase;
+    }
+    [class*="st-key-kpitile_"] button p:nth-of-type(2) {
+        font-family:'JetBrains Mono', monospace; font-size:2rem; font-weight:700;
+        line-height:1.15; color:var(--text);
+    }
+    [class*="st-key-kpitile_"] button p:nth-of-type(3) {
+        color:var(--muted); font-size:.8rem; margin-top:.15rem;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -411,11 +424,9 @@ if nav == "Dashboard":
     ]
     for col, (slug, label, value, sub) in zip(st.columns(4), tiles):
         with col:
-            box = st.container(key=f"kpi_{slug}")
-            box.metric(label, value, sub, delta_color="off")
-            box.button(f"Show {label} reviews", key=f"kpibtn_{slug}",
-                       on_click=open_detail, args=(label,),
-                       use_container_width=True)
+            st.button(f"{label}\n\n{value}\n\n{sub}", key=f"kpitile_{slug}",
+                      on_click=open_detail, args=(label,),
+                      use_container_width=True)
 
     col1, col2 = st.columns(2)
     with col1:
