@@ -395,14 +395,50 @@ with st.spinner("Analysing reviews…"):
 total = analysis_results["total_reviews"]
 rating_col = analyze_columns(df)["rating_column"]
 
-NAV = ["Dashboard", "Priority & Replies", "Insights & Actions",
+NAV = ["Welcome", "Dashboard", "Priority & Replies", "Insights & Actions",
        "Analysis Details", "Export"]
-st.session_state.setdefault("nav", "Dashboard")
+st.session_state.setdefault("nav", "Welcome")
 for _c, _name in zip(st.columns(len(NAV)), NAV):
     _c.button(_name, key=f"navbtn_{_name}", on_click=_set, args=("nav", _name),
               use_container_width=True,
               type="primary" if st.session_state.nav == _name else "secondary")
 nav = st.session_state.nav
+
+# --- Welcome -----------------------------------------------------------------
+if nav == "Welcome":
+    st.subheader("Turn customer reviews into decisions")
+    st.write(
+        "SmartReview-AI reads a pile of product reviews and tells you what "
+        "customers feel, what keeps going wrong, and which reviews to answer "
+        "first — each with a ready-to-edit reply. No spreadsheets, no reading "
+        "hundreds of reviews by hand.")
+
+    features = [
+        ("Sentiment at a glance",
+         "Every review scored positive / negative / neutral, blended with its star rating."),
+        ("Issue detection",
+         "Auto-tags recurring problems: quality, shipping, sizing, safety, pricing, service."),
+        ("Priority queue",
+         "Ranks the reviews that need a response first — each with a suggested reply."),
+        ("Drill-down analytics",
+         "Click any KPI to see the reviews behind it, plus word cloud and sentiment trends."),
+    ]
+    for col, (title, desc) in zip(st.columns(4), features):
+        with col:
+            with st.container(border=True):
+                st.markdown(f"**{title}**")
+                st.caption(desc)
+
+    st.markdown("#### How to use it")
+    st.markdown(
+        f"- A realistic sample of **{total:,} reviews is already loaded** — "
+        "just open the **Dashboard**.\n"
+        "- Or upload your **own CSV** from the sidebar (it needs a column of "
+        "review text; a rating column sharpens the analysis).")
+    st.button("Explore the dashboard →", type="primary",
+              on_click=_set, args=("nav", "Dashboard"))
+    st.caption("A portfolio project by Tejas Venkatesh · sentiment via VADER · "
+               "built with Streamlit.")
 
 # --- Dashboard ---------------------------------------------------------------
 if nav == "Dashboard":
