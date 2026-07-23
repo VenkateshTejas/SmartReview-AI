@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from streamlit.components.v1 import html as st_html
 
 from analyzer import ReviewAnalyzer
 
@@ -198,6 +199,7 @@ def open_detail(category):
     """Tile click -> jump to Analysis Details with the table pre-filtered."""
     st.session_state.nav = "Analysis Details"
     st.session_state.detail_filter = category
+    st.session_state.scroll_to_table = True
 
 
 def _set(state_key, value):
@@ -573,6 +575,7 @@ if nav == "Analysis Details":
         except Exception:
             pass
 
+    st.markdown('<div id="reviews-table"></div>', unsafe_allow_html=True)
     st.markdown("#### All reviews with analysis")
     detail_opts = ["All", "Positive", "Negative", "With issues", "Urgent"]
     st.session_state.setdefault("detail_filter", "All")
@@ -600,6 +603,13 @@ if nav == "Analysis Details":
     st.caption(f"Showing {len(display_df):,} of {total:,} reviews{suffix}")
     st.dataframe(display_df.sort_values("Priority", ascending=False),
                  use_container_width=True, height=420)
+
+    # When arriving from a KPI tile, scroll straight to the table.
+    if st.session_state.pop("scroll_to_table", False):
+        st_html(
+            "<script>window.parent.document.getElementById('reviews-table')"
+            "?.scrollIntoView({behavior:'smooth', block:'start'});</script>",
+            height=0)
 
 # --- Export ------------------------------------------------------------------
 if nav == "Export":
