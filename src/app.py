@@ -384,6 +384,37 @@ with tab1:
     c4.metric("Urgent", urgent_count,
               f"{resp_needed} to reply", delta_color="off")
 
+    # --- Interactive drill-down: pick a category, list those reviews ----------
+    st.caption("Select a category to list the matching reviews.")
+    choice = st.segmented_control(
+        "Drill into reviews", ["Positive", "Negative", "With issues", "Urgent"],
+        selection_mode="single", label_visibility="collapsed", key="dash_drill")
+    if choice:
+        sents = analysis_results["sentiments"]
+        issues = analysis_results["issues_found"]
+        pris = analysis_results["priority_scores"]
+        if choice == "Positive":
+            idxs = [i for i, s in enumerate(sents) if s == "Positive"]
+        elif choice == "Negative":
+            idxs = [i for i, s in enumerate(sents) if s == "Negative"]
+        elif choice == "With issues":
+            idxs = [i for i, x in enumerate(issues) if x]
+        else:  # Urgent
+            urg = set(analysis_results["urgent_indices"])
+            idxs = [i for i in range(len(df)) if df.index[i] in urg]
+        if idxs:
+            drill = pd.DataFrame({
+                "Review": [str(df.iloc[i][text_col]) for i in idxs],
+                "Sentiment": [sents[i] for i in idxs],
+                "Issues": [", ".join(issues[i]) if issues[i] else "—" for i in idxs],
+                "Priority": [pris[i] for i in idxs],
+            }).sort_values("Priority", ascending=False)
+            plural = "review" if len(idxs) == 1 else "reviews"
+            st.markdown(f"**{len(idxs)} {choice.lower()} {plural}**")
+            st.dataframe(drill, use_container_width=True, hide_index=True, height=280)
+        else:
+            st.info(f"No {choice.lower()} reviews.")
+
     col1, col2 = st.columns(2)
     with col1:
         if analysis_results["issue_summary"]:
