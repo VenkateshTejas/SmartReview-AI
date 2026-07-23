@@ -142,6 +142,19 @@ st.markdown("""
         font-size:.9rem; }
     blockquote { border-left:3px solid var(--accent); color:var(--muted); }
 
+    /* clickable KPI tiles: an invisible button overlays each metric card */
+    [class*="st-key-kpi_"] { position:relative; }
+    [class*="st-key-kpi_"] [data-testid="stButton"] {
+        position:absolute; inset:0; margin:0; z-index:3;
+    }
+    [class*="st-key-kpi_"] [data-testid="stButton"] > button {
+        width:100%; height:100%; opacity:0; cursor:pointer; border:none;
+    }
+    [class*="st-key-kpi_"]:hover [data-testid="stMetric"] {
+        transform:translateY(-3px); border-color:rgba(99,102,241,.55);
+        box-shadow:0 10px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(99,102,241,.18);
+    }
+
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation:none !important; transition:none !important; }
     }
@@ -166,6 +179,16 @@ def style_fig(fig, show_legend=True):
     if has_title:
         fig.update_layout(title_font=dict(color="#E5E7EB", size=15))
     return fig
+
+
+def open_detail(category):
+    """Tile click -> jump to Analysis Details with the table pre-filtered."""
+    st.session_state.nav = "Analysis Details"
+    st.session_state.detail_filter = category
+
+
+def _set(state_key, value):
+    st.session_state[state_key] = value
 
 
 # --- Data loading ------------------------------------------------------------
@@ -357,63 +380,42 @@ with st.spinner("Analysing reviews…"):
 total = analysis_results["total_reviews"]
 rating_col = analyze_columns(df)["rating_column"]
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "Dashboard", "Priority & Replies", "Insights & Actions",
-    "Analysis Details", "Export",
-])
+NAV = ["Dashboard", "Priority & Replies", "Insights & Actions",
+       "Analysis Details", "Export"]
+st.session_state.setdefault("nav", "Dashboard")
+for _c, _name in zip(st.columns(len(NAV)), NAV):
+    _c.button(_name, key=f"navbtn_{_name}", on_click=_set, args=("nav", _name),
+              use_container_width=True,
+              type="primary" if st.session_state.nav == _name else "secondary")
+nav = st.session_state.nav
 
-# --- Tab 1: Dashboard --------------------------------------------------------
-with tab1:
+# --- Dashboard ---------------------------------------------------------------
+if nav == "Dashboard":
     st.subheader("Business overview")
 
     urgent_count = len(analysis_results["urgent_indices"])
     if urgent_count:
         st.error(f"**URGENT** — {urgent_count} reviews need a response today.")
 
-    c1, c2, c3, c4 = st.columns(4)
     pos_pct = analysis_results["positive_count"] / total * 100
     neg_pct = analysis_results["negative_count"] / total * 100
     issues_ct = len([i for i in analysis_results["issues_found"] if i])
     resp_needed = len([s for s in analysis_results["priority_scores"] if s > 50])
-    c1.metric("Positive", analysis_results["positive_count"],
-              f"{pos_pct:.0f}%", delta_color="off")
-    c2.metric("Negative", analysis_results["negative_count"],
-              f"{neg_pct:.0f}%", delta_color="off")
-    c3.metric("With issues", issues_ct,
-              f"{issues_ct / total * 100:.0f}%", delta_color="off")
-    c4.metric("Urgent", urgent_count,
-              f"{resp_needed} to reply", delta_color="off")
 
-    # --- Interactive drill-down: pick a category, list those reviews ----------
-    st.caption("Select a category to list the matching reviews.")
-    choice = st.segmented_control(
-        "Drill into reviews", ["Positive", "Negative", "With issues", "Urgent"],
-        selection_mode="single", label_visibility="collapsed", key="dash_drill")
-    if choice:
-        sents = analysis_results["sentiments"]
-        issues = analysis_results["issues_found"]
-        pris = analysis_results["priority_scores"]
-        if choice == "Positive":
-            idxs = [i for i, s in enumerate(sents) if s == "Positive"]
-        elif choice == "Negative":
-            idxs = [i for i, s in enumerate(sents) if s == "Negative"]
-        elif choice == "With issues":
-            idxs = [i for i, x in enumerate(issues) if x]
-        else:  # Urgent
-            urg = set(analysis_results["urgent_indices"])
-            idxs = [i for i in range(len(df)) if df.index[i] in urg]
-        if idxs:
-            drill = pd.DataFrame({
-                "Review": [str(df.iloc[i][text_col]) for i in idxs],
-                "Sentiment": [sents[i] for i in idxs],
-                "Issues": [", ".join(issues[i]) if issues[i] else "—" for i in idxs],
-                "Priority": [pris[i] for i in idxs],
-            }).sort_values("Priority", ascending=False)
-            plural = "review" if len(idxs) == 1 else "reviews"
-            st.markdown(f"**{len(idxs)} {choice.lower()} {plural}**")
-            st.dataframe(drill, use_container_width=True, hide_index=True, height=280)
-        else:
-            st.info(f"No {choice.lower()} reviews.")
+    st.caption("Click a tile to open its reviews in Analysis Details.")
+    tiles = [
+        ("positive", "Positive", analysis_results["positive_count"], f"{pos_pct:.0f}%"),
+        ("negative", "Negative", analysis_results["negative_count"], f"{neg_pct:.0f}%"),
+        ("issues", "With issues", issues_ct, f"{issues_ct / total * 100:.0f}%"),
+        ("urgent", "Urgent", urgent_count, f"{resp_needed} to reply"),
+    ]
+    for col, (slug, label, value, sub) in zip(st.columns(4), tiles):
+        with col:
+            box = st.container(key=f"kpi_{slug}")
+            box.metric(label, value, sub, delta_color="off")
+            box.button(f"Show {label} reviews", key=f"kpibtn_{slug}",
+                       on_click=open_detail, args=(label,),
+                       use_container_width=True)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -444,8 +446,8 @@ with tab1:
                           textfont=dict(family="Inter", color="#0B0F17", size=13))
         st.plotly_chart(style_fig(fig), use_container_width=True)
 
-# --- Tab 2: Priority queue + AI replies --------------------------------------
-with tab2:
+# --- Priority queue + suggested replies --------------------------------------
+if nav == "Priority & Replies":
     st.subheader("Reviews to action first")
     st.caption("Ranked by priority score. Each has an editable, suggested reply.")
 
@@ -496,8 +498,8 @@ with tab2:
                 st.text_area("draft", value=draft, height=110,
                              key=f"draft_{idx}", label_visibility="collapsed")
 
-# --- Tab 3: Insights ---------------------------------------------------------
-with tab3:
+# --- Insights ----------------------------------------------------------------
+if nav == "Insights & Actions":
     st.subheader("Actionable insights")
     if insights and insights["urgent_actions"]:
         st.error("**Urgent actions required**")
@@ -526,8 +528,8 @@ with tab3:
     c2.markdown("**This week**\n\n- Address top quality issues\n"
                 "- Review shipping performance\n- Update product descriptions")
 
-# --- Tab 4: Analysis details -------------------------------------------------
-with tab4:
+# --- Analysis details --------------------------------------------------------
+if nav == "Analysis Details":
     st.subheader("Detailed analysis")
     if word_freq:
         st.markdown("#### Most mentioned words")
@@ -561,16 +563,35 @@ with tab4:
             pass
 
     st.markdown("#### All reviews with analysis")
+    detail_opts = ["All", "Positive", "Negative", "With issues", "Urgent"]
+    st.session_state.setdefault("detail_filter", "All")
+    for _c, _name in zip(st.columns(len(detail_opts)), detail_opts):
+        _c.button(_name, key=f"dfbtn_{_name}", on_click=_set,
+                  args=("detail_filter", _name), use_container_width=True,
+                  type="primary" if st.session_state.detail_filter == _name else "secondary")
+    flt = st.session_state.detail_filter
+
     display_df = df.copy()
     display_df["Sentiment"] = analysis_results["sentiments"]
     display_df["Priority"] = analysis_results["priority_scores"]
     display_df["Issues"] = [", ".join(i) if i else "None"
                             for i in analysis_results["issues_found"]]
+    if flt == "Positive":
+        display_df = display_df[display_df["Sentiment"] == "Positive"]
+    elif flt == "Negative":
+        display_df = display_df[display_df["Sentiment"] == "Negative"]
+    elif flt == "With issues":
+        display_df = display_df[display_df["Issues"] != "None"]
+    elif flt == "Urgent":
+        display_df = display_df[display_df.index.isin(analysis_results["urgent_indices"])]
+
+    suffix = "" if flt == "All" else f" · {flt}"
+    st.caption(f"Showing {len(display_df):,} of {total:,} reviews{suffix}")
     st.dataframe(display_df.sort_values("Priority", ascending=False),
                  use_container_width=True, height=420)
 
-# --- Tab 5: Export -----------------------------------------------------------
-with tab5:
+# --- Export ------------------------------------------------------------------
+if nav == "Export":
     st.subheader("Export results")
     export_df = analyzer.export_analysis(df, analysis_results)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
