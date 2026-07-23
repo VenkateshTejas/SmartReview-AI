@@ -179,6 +179,13 @@ st.markdown("""
     /* hide Plotly's hover toolbar — it overlaps the chart titles */
     .modebar-container, .modebar { display:none !important; }
 
+    /* top nav: content-sized buttons in a row that wraps gracefully */
+    [class*="st-key-navrow"] {
+        flex-direction:row !important; flex-wrap:wrap; gap:.5rem; align-items:center;
+    }
+    [class*="st-key-navrow"] [data-testid="stElementContainer"] { width:auto !important; }
+    [class*="st-key-navrow"] button { white-space:nowrap; }
+
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation:none !important; transition:none !important; }
     }
@@ -410,10 +417,11 @@ NAV = ["Welcome", "Dashboard", "Priority & Replies", "Insights & Actions",
 st.session_state.setdefault("nav", "Welcome")
 # Hide the section nav on the Welcome landing page — you enter via the CTA.
 if st.session_state.nav != "Welcome":
-    for _c, _name in zip(st.columns(len(NAV)), NAV):
-        _c.button(_name, key=f"navbtn_{_name}", on_click=_set, args=("nav", _name),
-                  use_container_width=True,
-                  type="primary" if st.session_state.nav == _name else "secondary")
+    with st.container(key="navrow"):
+        for _name in NAV:
+            st.button(_name, key=f"navbtn_{_name}", on_click=_set,
+                      args=("nav", _name),
+                      type="primary" if st.session_state.nav == _name else "secondary")
 nav = st.session_state.nav
 
 # --- Welcome -----------------------------------------------------------------
