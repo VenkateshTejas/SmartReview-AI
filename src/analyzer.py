@@ -244,19 +244,19 @@ class ReviewAnalyzer:
         negative_pct = (analysis_results["negative_count"] / total) * 100
         if negative_pct > 30:
             insights["recommendations"].append(
-                "🚨 High negative sentiment - review product/service quality")
+                "High negative sentiment — review product/service quality")
         if "Safety Concern" in summary:
             insights["recommendations"].append(
-                "⚠️ Safety complaints reported - escalate to compliance immediately")
+                "Safety complaints reported — escalate to compliance immediately")
         if "Quality Issues" in summary:
             insights["recommendations"].append(
-                "🔧 Multiple quality complaints - check manufacturing")
+                "Multiple quality complaints — check manufacturing")
         if "Shipping Problems" in summary:
             insights["recommendations"].append(
-                "📦 Shipping issues detected - review logistics")
+                "Shipping issues detected — review logistics")
         if "Sizing Issues" in summary:
             insights["recommendations"].append(
-                "📏 Sizing complaints - update size charts and product descriptions")
+                "Sizing complaints — update size charts and product descriptions")
 
         return insights
 
