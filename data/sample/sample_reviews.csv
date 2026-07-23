@@ -1,0 +1,191 @@
+review_id,date,product,rating,review_text,verified_purchase,helpful_votes
+R1082,2025-03-01,Smart LED Light Bulbs (4-pack),2,No response after multiple emails. Support just ignored me completely. I want a refund.,True,0
+R1135,2025-03-02,Insulated Coffee Mug,5,Best one I've owned. Fast shipping and the packaging was excellent.,False,3
+R1055,2025-03-04,Wireless Bluetooth Headphones,4,Fantastic product. Setup was easy and it does everything the listing promised.,True,6
+R1015,2025-03-04,Running Shoes,5,Super comfortable and the battery lasts all day. No complaints at all.,True,12
+R1050,2025-03-05,Stainless Steel Water Bottle,5,Absolutely love these! The quality exceeded my expectations and they arrived a day early.,True,4
+R1134,2025-03-05,Smart LED Light Bulbs (4-pack),4,Bought this as a gift and they loved it. Will definitely order more.,True,5
+R1093,2025-03-06,Insulated Coffee Mug,5,Impressive build quality. You can tell they didn't cut corners.,True,7
+R1159,2025-03-06,Wireless Bluetooth Headphones,3,It's okay. Does what it says but nothing special. Fine for the price I guess.,True,3
+R1011,2025-03-06,Running Shoes,5,Super comfortable and the battery lasts all day. No complaints at all.,True,4
+R1173,2025-03-07,Insulated Coffee Mug,3,It's okay. Does what it says but nothing special. Fine for the price I guess.,False,0
+R1119,2025-03-09,Running Shoes,4,Best one I've owned. Fast shipping and the packaging was excellent.,True,7
+R1189,2025-03-09,Smart LED Light Bulbs (4-pack),1,The box arrived badly damaged in shipping. Contents were rattling around loose.,True,14
+R1001,2025-03-10,Stainless Steel Water Bottle,5,Great quality for the money. My whole family loves it.,True,4
+R1113,2025-03-11,Insulated Coffee Mug,5,Super comfortable and the battery lasts all day. No complaints at all.,True,9
+R1147,2025-03-11,Ergonomic Office Chair,3,It's okay. Does what it says but nothing special. Fine for the price I guess.,True,3
+R1142,2025-03-11,Wireless Bluetooth Headphones,1,The box arrived badly damaged in shipping. Contents were rattling around loose. I want a refund.,True,4
+R1164,2025-03-12,Wireless Bluetooth Headphones,3,"Middle of the road. Some features are good, others feel a bit cheap.",True,2
+R1176,2025-03-12,Stainless Steel Water Bottle,1,"Broke after just two days of normal use. Very poor quality, feels cheaply made.",True,1
+R1158,2025-03-13,Ergonomic Office Chair,1,Package was damaged during shipping and the product inside was crushed.,True,1
+R1070,2025-03-13,Wireless Bluetooth Headphones,3,Decent product but the shipping took a bit longer than expected.,True,0
+R1088,2025-03-13,Ergonomic Office Chair,5,Impressive build quality. You can tell they didn't cut corners.,True,3
+R1017,2025-03-14,Running Shoes,2,"Too big and bulky, nothing like the dimensions in the description.",False,5
+R1165,2025-03-15,Stainless Steel Water Bottle,5,Been using this daily for a month now and it still looks and works like new.,True,14
+R1018,2025-03-16,USB-C Charging Cable (6ft),1,"My child got hurt using this. Unsafe design, I want a refund immediately.",True,10
+R1071,2025-03-18,Stainless Steel Water Bottle,1,No response after multiple emails. Support just ignored me completely.,True,9
+R1051,2025-03-18,Non-Slip Yoga Mat,5,Solid product that just works. Nothing fancy but does the job perfectly.,True,6
+R1138,2025-03-18,Stainless Steel Water Bottle,5,"Really happy with this purchase. Sturdy, reliable, and looks great too.",True,7
+R1020,2025-03-19,USB-C Charging Cable (6ft),3,Decent product but the shipping took a bit longer than expected.,True,7
+R1096,2025-03-19,Insulated Coffee Mug,5,Excellent customer service too when I had a quick question. Very responsive.,False,10
+R1087,2025-03-21,Wireless Bluetooth Headphones,3,"Average quality. Not bad, not amazing. Would consider other options next time.",False,0
+R1118,2025-03-21,USB-C Charging Cable (6ft),5,"Really happy with this purchase. Sturdy, reliable, and looks great too.",True,1
+R1110,2025-03-21,Smart LED Light Bulbs (4-pack),1,No response after multiple emails. Support just ignored me completely.,True,7
+R1120,2025-03-22,USB-C Charging Cable (6ft),4,Best one I've owned. Fast shipping and the packaging was excellent.,True,5
+R1069,2025-03-22,Wireless Bluetooth Headphones,3,"Average quality. Not bad, not amazing. Would consider other options next time.",True,0
+R1187,2025-03-23,Insulated Coffee Mug,5,Best one I've owned. Fast shipping and the packaging was excellent.,False,3
+R1137,2025-03-23,Smart LED Light Bulbs (4-pack),5,Works perfectly and feels really well made. Highly recommend to anyone on the fence.,True,10
+R1092,2025-03-24,Smart LED Light Bulbs (4-pack),3,"Average quality. Not bad, not amazing. Would consider other options next time.",True,5
+R1034,2025-03-27,Ergonomic Office Chair,3,It's okay. Does what it says but nothing special. Fine for the price I guess.,True,12
+R1154,2025-03-27,Non-Slip Yoga Mat,5,Solid product that just works. Nothing fancy but does the job perfectly.,False,1
+R1177,2025-03-28,USB-C Charging Cable (6ft),2,Item never arrived. Still waiting after three weeks with no update from the seller.,True,0
+R1106,2025-03-28,Running Shoes,5,"Five stars. Comfortable, durable, and exactly the right size.",True,5
+R1153,2025-03-30,Wireless Bluetooth Headphones,1,Way too expensive for such a basic product. Total waste of money. Returning it for sure.,True,6
+R1030,2025-03-31,Insulated Coffee Mug,1,"Way too small, doesn't fit at all. The size chart is completely wrong.",True,2
+R1127,2025-03-31,Wireless Bluetooth Headphones,5,Fantastic product. Setup was easy and it does everything the listing promised.,True,8
+R1004,2025-03-31,Non-Slip Yoga Mat,5,Great quality for the money. My whole family loves it.,True,5
+R1122,2025-04-01,Non-Slip Yoga Mat,3,"Average quality. Not bad, not amazing. Would consider other options next time.",True,1
+R1002,2025-04-01,USB-C Charging Cable (6ft),4,"Exactly as described. Great value for the price, would buy again without hesitation.",True,0
+R1169,2025-04-01,Smart LED Light Bulbs (4-pack),4,Been using this daily for a month now and it still looks and works like new.,False,0
+R1094,2025-04-02,USB-C Charging Cable (6ft),1,The box arrived badly damaged in shipping. Contents were rattling around loose. I want a refund.,True,4
+R1032,2025-04-02,Wireless Bluetooth Headphones,1,No response after multiple emails. Support just ignored me completely.,True,8
+R1052,2025-04-03,Wireless Bluetooth Headphones,4,"Really happy with this purchase. Sturdy, reliable, and looks great too.",True,0
+R1048,2025-04-03,Insulated Coffee Mug,1,Item never arrived. Still waiting after three weeks with no update from the seller. I want a refund.,True,6
+R1012,2025-04-03,USB-C Charging Cable (6ft),3,"Middle of the road. Some features are good, others feel a bit cheap.",True,8
+R1148,2025-04-04,Wireless Bluetooth Headphones,1,Dangerous product! It overheated and nearly caught fire. This should be recalled.,True,10
+R1058,2025-04-05,Insulated Coffee Mug,5,Been using this daily for a month now and it still looks and works like new.,False,1
+R1064,2025-04-06,Insulated Coffee Mug,4,Great quality for the money. My whole family loves it.,True,8
+R1023,2025-04-07,Wireless Bluetooth Headphones,5,Great quality for the money. My whole family loves it.,True,0
+R1067,2025-04-07,Wireless Bluetooth Headphones,3,Gets the job done. The color is slightly different from the pictures though.,True,0
+R1085,2025-04-08,USB-C Charging Cable (6ft),5,Super comfortable and the battery lasts all day. No complaints at all.,False,10
+R1097,2025-04-09,Ergonomic Office Chair,1,Runs small compared to the measurements listed. Had to send it back. I want a refund.,True,5
+R1132,2025-04-09,Stainless Steel Water Bottle,1,Runs small compared to the measurements listed. Had to send it back.,True,7
+R1161,2025-04-10,Ergonomic Office Chair,5,Impressive build quality. You can tell they didn't cut corners.,True,8
+R1081,2025-04-10,Wireless Bluetooth Headphones,3,It's okay. Does what it says but nothing special. Fine for the price I guess.,False,0
+R1090,2025-04-11,Stainless Steel Water Bottle,4,"Five stars. Comfortable, durable, and exactly the right size.",True,1
+R1175,2025-04-11,Smart LED Light Bulbs (4-pack),4,"Exactly as described. Great value for the price, would buy again without hesitation.",False,5
+R1121,2025-04-14,USB-C Charging Cable (6ft),3,"Middle of the road. Some features are good, others feel a bit cheap.",True,1
+R1054,2025-04-15,Non-Slip Yoga Mat,2,Way too expensive for such a basic product. Total waste of money.,True,0
+R1152,2025-04-16,Insulated Coffee Mug,3,"Average quality. Not bad, not amazing. Would consider other options next time.",True,1
+R1184,2025-04-17,Running Shoes,1,"Broke after just two days of normal use. Very poor quality, feels cheaply made.",True,0
+R1104,2025-04-20,Wireless Bluetooth Headphones,1,"Wrong item delivered. This is not what I ordered at all, very frustrating. I want a refund.",True,0
+R1105,2025-04-21,Non-Slip Yoga Mat,1,"Way too small, doesn't fit at all. The size chart is completely wrong.",True,8
+R1130,2025-04-22,Wireless Bluetooth Headphones,5,Been using this daily for a month now and it still looks and works like new.,True,12
+R1078,2025-04-23,Stainless Steel Water Bottle,3,"Middle of the road. Some features are good, others feel a bit cheap.",True,5
+R1129,2025-04-25,Wireless Bluetooth Headphones,3,Reasonable for the price. Time will tell how well it holds up.,True,0
+R1140,2025-04-26,Insulated Coffee Mug,2,Customer service was rude and unhelpful when I tried to get this sorted out.,True,3
+R1045,2025-04-27,Ergonomic Office Chair,5,"Five stars. Comfortable, durable, and exactly the right size.",True,12
+R1156,2025-04-28,Ergonomic Office Chair,5,Works perfectly and feels really well made. Highly recommend to anyone on the fence.,True,5
+R1126,2025-04-29,Running Shoes,4,"Five stars. Comfortable, durable, and exactly the right size.",False,5
+R1065,2025-04-29,Stainless Steel Water Bottle,5,Fantastic product. Setup was easy and it does everything the listing promised.,True,9
+R1080,2025-04-29,Running Shoes,3,Gets the job done. The color is slightly different from the pictures though.,False,6
+R1098,2025-04-29,Wireless Bluetooth Headphones,1,"My child got hurt using this. Unsafe design, I want a refund immediately.",True,12
+R1014,2025-04-29,Ergonomic Office Chair,2,"My child got hurt using this. Unsafe design, I want a refund immediately.",True,0
+R1145,2025-04-30,Running Shoes,5,"Five stars. Comfortable, durable, and exactly the right size.",True,8
+R1171,2025-04-30,USB-C Charging Cable (6ft),2,Item never arrived. Still waiting after three weeks with no update from the seller. I want a refund.,False,0
+R1035,2025-05-01,Smart LED Light Bulbs (4-pack),1,Dangerous product! It overheated and nearly caught fire. This should be recalled. I want a refund.,True,6
+R1039,2025-05-03,USB-C Charging Cable (6ft),4,Great quality for the money. My whole family loves it.,True,0
+R1102,2025-05-03,Wireless Bluetooth Headphones,5,"Really happy with this purchase. Sturdy, reliable, and looks great too.",False,3
+R1083,2025-05-04,Smart LED Light Bulbs (4-pack),2,"Stopped working within a week. Defective right out of the box, so disappointed. Returning it for sure.",True,9
+R1089,2025-05-05,Non-Slip Yoga Mat,5,Fantastic product. Setup was easy and it does everything the listing promised.,True,3
+R1059,2025-05-05,Insulated Coffee Mug,1,Dangerous product! It overheated and nearly caught fire. This should be recalled. Returning it for sure.,True,12
+R1123,2025-05-05,Non-Slip Yoga Mat,3,Reasonable for the price. Time will tell how well it holds up.,True,0
+R1128,2025-05-06,Wireless Bluetooth Headphones,1,"Way too small, doesn't fit at all. The size chart is completely wrong.",True,8
+R1053,2025-05-07,Wireless Bluetooth Headphones,5,"Exactly as described. Great value for the price, would buy again without hesitation.",True,10
+R1072,2025-05-07,USB-C Charging Cable (6ft),5,Bought this as a gift and they loved it. Will definitely order more.,True,5
+R1075,2025-05-08,Stainless Steel Water Bottle,1,"Too big and bulky, nothing like the dimensions in the description. I want a refund.",True,11
+R1061,2025-05-08,Running Shoes,5,Works perfectly and feels really well made. Highly recommend to anyone on the fence.,True,1
+R1084,2025-05-10,Wireless Bluetooth Headphones,4,Solid product that just works. Nothing fancy but does the job perfectly.,True,10
+R1133,2025-05-12,Non-Slip Yoga Mat,5,Fantastic product. Setup was easy and it does everything the listing promised.,True,0
+R1185,2025-05-12,USB-C Charging Cable (6ft),2,Runs small compared to the measurements listed. Had to send it back.,False,2
+R1060,2025-05-12,USB-C Charging Cable (6ft),5,Solid product that just works. Nothing fancy but does the job perfectly.,True,10
+R1178,2025-05-13,Running Shoes,4,Absolutely love these! The quality exceeded my expectations and they arrived a day early.,True,4
+R1181,2025-05-13,Wireless Bluetooth Headphones,3,"Middle of the road. Some features are good, others feel a bit cheap.",True,1
+R1077,2025-05-14,Running Shoes,4,"Five stars. Comfortable, durable, and exactly the right size.",True,0
+R1179,2025-05-15,Smart LED Light Bulbs (4-pack),5,Excellent customer service too when I had a quick question. Very responsive.,True,0
+R1047,2025-05-15,Stainless Steel Water Bottle,4,"Really happy with this purchase. Sturdy, reliable, and looks great too.",True,1
+R1167,2025-05-16,Wireless Bluetooth Headphones,4,Fantastic product. Setup was easy and it does everything the listing promised.,False,4
+R1117,2025-05-17,Ergonomic Office Chair,1,The box arrived badly damaged in shipping. Contents were rattling around loose. Returning it for sure.,True,7
+R1043,2025-05-17,Stainless Steel Water Bottle,5,"Exactly as described. Great value for the price, would buy again without hesitation.",False,7
+R1111,2025-05-19,Insulated Coffee Mug,1,"Way too small, doesn't fit at all. The size chart is completely wrong.",True,7
+R1131,2025-05-19,Stainless Steel Water Bottle,5,"Really happy with this purchase. Sturdy, reliable, and looks great too.",True,7
+R1010,2025-05-19,Running Shoes,5,Fantastic product. Setup was easy and it does everything the listing promised.,True,5
+R1062,2025-05-19,USB-C Charging Cable (6ft),4,"Really happy with this purchase. Sturdy, reliable, and looks great too.",True,1
+R1095,2025-05-19,Wireless Bluetooth Headphones,2,No response after multiple emails. Support just ignored me completely.,True,12
+R1108,2025-05-20,Stainless Steel Water Bottle,1,The box arrived badly damaged in shipping. Contents were rattling around loose.,False,7
+R1115,2025-05-21,Non-Slip Yoga Mat,1,"Way too small, doesn't fit at all. The size chart is completely wrong.",True,7
+R1150,2025-05-22,Non-Slip Yoga Mat,1,Package was damaged during shipping and the product inside was crushed.,False,3
+R1038,2025-05-23,Running Shoes,1,Package was damaged during shipping and the product inside was crushed.,True,5
+R1074,2025-05-24,Non-Slip Yoga Mat,2,"Wrong item delivered. This is not what I ordered at all, very frustrating.",True,3
+R1025,2025-05-24,USB-C Charging Cable (6ft),4,Great quality for the money. My whole family loves it.,True,0
+R1091,2025-05-25,Running Shoes,1,Terrible service. They were dismissive and refused to help with the problem.,True,4
+R1031,2025-05-25,Stainless Steel Water Bottle,1,Customer service was rude and unhelpful when I tried to get this sorted out.,True,10
+R1029,2025-05-26,USB-C Charging Cable (6ft),5,"Five stars. Comfortable, durable, and exactly the right size.",True,9
+R1114,2025-05-26,Smart LED Light Bulbs (4-pack),5,Absolutely love these! The quality exceeded my expectations and they arrived a day early.,True,6
+R1019,2025-05-27,Wireless Bluetooth Headphones,4,Works perfectly and feels really well made. Highly recommend to anyone on the fence.,True,5
+R1028,2025-05-29,Smart LED Light Bulbs (4-pack),3,Reasonable for the price. Time will tell how well it holds up.,True,0
+R1163,2025-05-29,Running Shoes,4,Solid product that just works. Nothing fancy but does the job perfectly.,True,0
+R1079,2025-06-01,Ergonomic Office Chair,5,Great quality for the money. My whole family loves it.,True,5
+R1146,2025-06-02,Stainless Steel Water Bottle,1,Customer service was rude and unhelpful when I tried to get this sorted out.,True,9
+R1024,2025-06-02,Ergonomic Office Chair,4,Super comfortable and the battery lasts all day. No complaints at all.,True,0
+R1021,2025-06-02,Running Shoes,5,Fantastic product. Setup was easy and it does everything the listing promised.,True,4
+R1180,2025-06-03,Smart LED Light Bulbs (4-pack),5,"Really happy with this purchase. Sturdy, reliable, and looks great too.",True,7
+R1155,2025-06-04,Non-Slip Yoga Mat,3,It's fine. Instructions could have been clearer but I figured it out.,True,0
+R1116,2025-06-07,Non-Slip Yoga Mat,1,"Too big and bulky, nothing like the dimensions in the description. I want a refund.",False,0
+R1066,2025-06-08,Smart LED Light Bulbs (4-pack),3,Works fine so far. A little smaller than I imagined from the photos.,True,0
+R1100,2025-06-08,Non-Slip Yoga Mat,5,"Exactly as described. Great value for the price, would buy again without hesitation.",True,0
+R1107,2025-06-09,Wireless Bluetooth Headphones,2,No response after multiple emails. Support just ignored me completely. Returning it for sure.,True,10
+R1162,2025-06-11,Non-Slip Yoga Mat,1,"Overpriced for what you get. Not worth the money, feels like a rip off. Returning it for sure.",False,10
+R1103,2025-06-16,Stainless Steel Water Bottle,1,"Wrong item delivered. This is not what I ordered at all, very frustrating. Returning it for sure.",True,6
+R1086,2025-06-18,Wireless Bluetooth Headphones,5,"Really happy with this purchase. Sturdy, reliable, and looks great too.",True,7
+R1037,2025-06-21,Ergonomic Office Chair,2,Package was damaged during shipping and the product inside was crushed.,True,0
+R1042,2025-06-22,Smart LED Light Bulbs (4-pack),1,"Received the wrong color and size. Not as advertised, want to return it.",True,7
+R1056,2025-06-23,Stainless Steel Water Bottle,3,"Average quality. Not bad, not amazing. Would consider other options next time.",True,0
+R1168,2025-06-24,Ergonomic Office Chair,2,Terrible service. They were dismissive and refused to help with the problem. Returning it for sure.,True,1
+R1143,2025-06-25,Non-Slip Yoga Mat,4,Best one I've owned. Fast shipping and the packaging was excellent.,True,0
+R1006,2025-06-25,Smart LED Light Bulbs (4-pack),3,It's fine. Instructions could have been clearer but I figured it out.,True,2
+R1136,2025-06-26,Ergonomic Office Chair,4,Solid product that just works. Nothing fancy but does the job perfectly.,True,0
+R1036,2025-06-26,Insulated Coffee Mug,4,Works perfectly and feels really well made. Highly recommend to anyone on the fence.,True,5
+R1044,2025-06-28,USB-C Charging Cable (6ft),5,Bought this as a gift and they loved it. Will definitely order more.,True,11
+R1027,2025-06-29,Non-Slip Yoga Mat,5,Absolutely love these! The quality exceeded my expectations and they arrived a day early.,True,3
+R1033,2025-06-30,Smart LED Light Bulbs (4-pack),2,Dangerous product! It overheated and nearly caught fire. This should be recalled.,True,3
+R1063,2025-06-30,Non-Slip Yoga Mat,4,Best one I've owned. Fast shipping and the packaging was excellent.,True,2
+R1112,2025-06-30,Wireless Bluetooth Headphones,2,Delivery was delayed by over a week and no one could tell me where it was.,True,3
+R1022,2025-07-01,Ergonomic Office Chair,1,No response after multiple emails. Support just ignored me completely. I want a refund.,True,5
+R1151,2025-07-01,USB-C Charging Cable (6ft),4,Fantastic product. Setup was easy and it does everything the listing promised.,True,0
+R1139,2025-07-02,Smart LED Light Bulbs (4-pack),1,Dangerous product! It overheated and nearly caught fire. This should be recalled. Returning it for sure.,True,8
+R1149,2025-07-04,Non-Slip Yoga Mat,1,Not worth the price at all. You can find much better for less elsewhere. Returning it for sure.,False,2
+R1008,2025-07-04,Insulated Coffee Mug,1,"Received the wrong color and size. Not as advertised, want to return it. I want a refund.",True,6
+R1186,2025-07-04,Stainless Steel Water Bottle,4,Works perfectly and feels really well made. Highly recommend to anyone on the fence.,True,8
+R1073,2025-07-05,Insulated Coffee Mug,5,Bought this as a gift and they loved it. Will definitely order more.,True,7
+R1009,2025-07-06,Running Shoes,1,"My child got hurt using this. Unsafe design, I want a refund immediately.",True,3
+R1144,2025-07-07,Running Shoes,5,Been using this daily for a month now and it still looks and works like new.,True,3
+R1188,2025-07-07,Ergonomic Office Chair,5,Been using this daily for a month now and it still looks and works like new.,True,5
+R1041,2025-07-08,USB-C Charging Cable (6ft),5,Great quality for the money. My whole family loves it.,True,7
+R1166,2025-07-08,Insulated Coffee Mug,3,"Average quality. Not bad, not amazing. Would consider other options next time.",True,3
+R1040,2025-07-08,USB-C Charging Cable (6ft),2,Runs small compared to the measurements listed. Had to send it back. Returning it for sure.,True,5
+R1049,2025-07-10,Running Shoes,1,"Not as described on the listing. Completely different from the photos, false advertising.",True,2
+R1026,2025-07-11,Running Shoes,1,Dangerous product! It overheated and nearly caught fire. This should be recalled.,True,5
+R1170,2025-07-12,Non-Slip Yoga Mat,2,"My child got hurt using this. Unsafe design, I want a refund immediately.",True,0
+R1068,2025-07-13,Wireless Bluetooth Headphones,1,"Too big and bulky, nothing like the dimensions in the description.",True,6
+R1183,2025-07-13,USB-C Charging Cable (6ft),1,Runs small compared to the measurements listed. Had to send it back.,True,11
+R1007,2025-07-13,Running Shoes,1,"Overpriced for what you get. Not worth the money, feels like a rip off.",True,1
+R1125,2025-07-13,USB-C Charging Cable (6ft),4,Been using this daily for a month now and it still looks and works like new.,True,8
+R1109,2025-07-13,Running Shoes,1,"Wrong item delivered. This is not what I ordered at all, very frustrating.",True,10
+R1099,2025-07-14,Insulated Coffee Mug,5,Works perfectly and feels really well made. Highly recommend to anyone on the fence.,True,7
+R1000,2025-07-16,Stainless Steel Water Bottle,5,Works perfectly and feels really well made. Highly recommend to anyone on the fence.,True,5
+R1172,2025-07-16,Running Shoes,1,"Wrong item delivered. This is not what I ordered at all, very frustrating. I want a refund.",True,10
+R1182,2025-07-16,USB-C Charging Cable (6ft),4,Great quality for the money. My whole family loves it.,True,0
+R1101,2025-07-16,Non-Slip Yoga Mat,3,It's okay. Does what it says but nothing special. Fine for the price I guess.,False,1
+R1057,2025-07-18,Insulated Coffee Mug,3,"Middle of the road. Some features are good, others feel a bit cheap.",False,1
+R1076,2025-07-19,USB-C Charging Cable (6ft),2,"Received the wrong color and size. Not as advertised, want to return it. I want a refund.",True,3
+R1013,2025-07-19,Non-Slip Yoga Mat,1,Customer service was rude and unhelpful when I tried to get this sorted out.,False,8
+R1046,2025-07-20,Running Shoes,1,No response after multiple emails. Support just ignored me completely. I want a refund.,True,5
+R1174,2025-07-23,Ergonomic Office Chair,5,Fantastic product. Setup was easy and it does everything the listing promised.,True,1
+R1141,2025-07-23,USB-C Charging Cable (6ft),5,"Five stars. Comfortable, durable, and exactly the right size.",True,3
+R1016,2025-07-23,Smart LED Light Bulbs (4-pack),4,Fantastic product. Setup was easy and it does everything the listing promised.,False,5
+R1005,2025-07-23,Wireless Bluetooth Headphones,1,"Stopped working within a week. Defective right out of the box, so disappointed. Returning it for sure.",True,8
+R1003,2025-07-26,Insulated Coffee Mug,3,It's okay. Does what it says but nothing special. Fine for the price I guess.,True,5
+R1124,2025-07-27,USB-C Charging Cable (6ft),5,Been using this daily for a month now and it still looks and works like new.,True,10
+R1157,2025-07-28,Smart LED Light Bulbs (4-pack),1,"Received the wrong color and size. Not as advertised, want to return it. Returning it for sure.",True,7
+R1160,2025-07-28,Non-Slip Yoga Mat,4,"Exactly as described. Great value for the price, would buy again without hesitation.",True,0

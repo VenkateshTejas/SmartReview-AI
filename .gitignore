@@ -15,6 +15,9 @@ data/*.csv
 data/*.xlsx
 *.csv
 
+# ...but keep the bundled demo dataset so the hosted app has data
+!data/sample/sample_reviews.csv
+
 # Mac
 .DS_Store
 

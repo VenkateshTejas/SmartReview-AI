@@ -31,15 +31,17 @@ SmartReview-AI provides:
 ## ✨ Key Features
 
 ### Available Now (MVP)
-- ✅ Bulk review processing (1,000+ reviews in 60 seconds)
-- ✅ Sentiment classification with 85% accuracy
-- ✅ Top 5 issue identification
-- ✅ Trend visualization dashboard
-- ✅ CSV export functionality
+- ✅ Bulk review processing (thousands of reviews in seconds)
+- ✅ Sentiment classification with VADER (tuned for short review text)
+- ✅ Automatic issue detection (quality, shipping, sizing, safety, pricing & more)
+- ✅ Priority scoring to triage the reviews that matter most
+- ✅ **AI-drafted reply suggestions** tailored to each review's issue
+- ✅ Trend & word-frequency visualization dashboard
+- ✅ Robust CSV upload (handles odd encodings & malformed rows) + a bundled demo dataset
+- ✅ CSV / executive-summary export
 
 ### Coming Soon
 - 🔄 Real-time review monitoring
-- 🤖 AI-generated response templates
 - 🌍 Multi-language support
 - 📱 Mobile application
 - 🔗 E-commerce platform integrations

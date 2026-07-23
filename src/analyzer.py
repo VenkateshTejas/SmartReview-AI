@@ -273,6 +273,64 @@ class ReviewAnalyzer:
         }
         return actions.get(issue_type, "Investigate and create action plan")
 
+    # --- Response drafting ---------------------------------------------------
+    # Suggested reply templates keyed by issue category (most severe first).
+    RESPONSE_TEMPLATES = {
+        "Safety Concern": (
+            "Hi {name}, thank you for flagging this — safety is our top priority "
+            "and we're treating your report with urgency. Please stop using the "
+            "{product} immediately. We're issuing a full refund now and escalating "
+            "this to our product-safety team, who will follow up with you directly."),
+        "Quality Issues": (
+            "Hi {name}, I'm sorry the {product} didn't hold up — that's not the "
+            "standard we aim for. We'd like to make it right with a free replacement "
+            "or a full refund, whichever you prefer. I've also shared your feedback "
+            "with our quality team."),
+        "Wrong Product": (
+            "Hi {name}, apologies for the mix-up with your order. We'll ship the "
+            "correct {product} right away at no cost and email you a prepaid return "
+            "label for the item you received. Thank you for your patience."),
+        "Shipping Problems": (
+            "Hi {name}, I'm sorry about the delivery trouble with your {product}. "
+            "We're tracking down your package and will reship or refund it today, "
+            "plus cover any shipping charges. Thank you for letting us know."),
+        "Customer Service": (
+            "Hi {name}, I'm sorry about the experience you had with our support "
+            "team — that's not how we want to treat customers. I've escalated this "
+            "to a manager who will reach out personally to make it right."),
+        "Sizing Issues": (
+            "Hi {name}, sorry the {product} didn't fit as expected. We'll happily "
+            "send a free exchange in the correct size and I've flagged our size "
+            "guide for review so this is clearer for the next customer."),
+        "Value/Pricing": (
+            "Hi {name}, thank you for the honest feedback on pricing. We're always "
+            "reviewing our value against the market — I'd like to offer you a "
+            "discount on your next order as a thank-you for giving us a try."),
+    }
+
+    def draft_response(self, sentiment, issues=None, rating=None, product=None,
+                       name="there"):
+        """Draft a suggested reply to a review (template-based, no external API)."""
+        product = product or "product"
+        issues = issues or []
+
+        # Prioritise the most severe detected issue.
+        for issue in self.ISSUE_RULES:  # dict is ordered most-severe first
+            if issue in issues:
+                return self.RESPONSE_TEMPLATES[issue].format(name=name, product=product)
+
+        if sentiment == "Positive":
+            return (f"Hi {name}, thank you so much for the kind words — we're "
+                    f"thrilled you're happy with the {product}! Reviews like yours "
+                    "make our day. We'd love to see you again soon.")
+        if sentiment == "Negative":
+            return (f"Hi {name}, I'm sorry the {product} didn't meet your "
+                    "expectations. We'd really like to understand what went wrong "
+                    "and make it right — please reply here and we'll help right away.")
+        return (f"Hi {name}, thanks for taking the time to review the {product}. "
+                "We'd love to know what would have made this a 5-star experience — "
+                "your feedback helps us improve.")
+
     def get_priority_reviews(self, df, analysis_results, text_column, top_n=10):
         """Return the highest-priority reviews for triage."""
         if not analysis_results or "priority_scores" not in analysis_results:

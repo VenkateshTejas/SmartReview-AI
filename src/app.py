@@ -1,524 +1,442 @@
-import streamlit as st
+import io
+import os
+from datetime import datetime
+
+import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
-import numpy as np
-from datetime import datetime
-from analyzer import ReviewAnalyzer as SimpleAnalyzer
+import streamlit as st
 
-st.set_page_config(page_title="SmartReview-AI", page_icon="📊", layout="wide")
+from analyzer import ReviewAnalyzer
 
-# Initialize session state
-if 'df' not in st.session_state:
-    st.session_state.df = None
-if 'analysis_results' not in st.session_state:
-    st.session_state.analysis_results = None
-if 'insights' not in st.session_state:
-    st.session_state.insights = None
-if 'priority_reviews' not in st.session_state:
-    st.session_state.priority_reviews = pd.DataFrame()
-if 'word_freq' not in st.session_state:
-    st.session_state.word_freq = {}
-if 'col_info' not in st.session_state:
-    st.session_state.col_info = None
+st.set_page_config(page_title="SmartReview-AI", page_icon="🤖", layout="wide")
 
-# Custom CSS for better UI
+# --- Config ------------------------------------------------------------------
+SAMPLE_CSV = os.path.join(os.path.dirname(__file__), "..", "data", "sample",
+                          "sample_reviews.csv")
+MAX_ROWS = 5000  # cap analysed rows so the hosted demo stays snappy
+SENTIMENT_COLORS = {"Positive": "#16a34a", "Negative": "#dc2626",
+                    "Neutral": "#f59e0b"}
+
+analyzer = ReviewAnalyzer()
+
+# --- Styling -----------------------------------------------------------------
 st.markdown("""
 <style>
-    .urgent-box {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        background-color: #fee;
-        border-left: 4px solid #f44336;
-        margin: 1rem 0;
+    .hero {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        padding: 1.6rem 2rem; border-radius: 16px; margin-bottom: 1.2rem;
+        color: white;
     }
-    .success-box {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        background-color: #efe;
-        border-left: 4px solid #4caf50;
-        margin: 1rem 0;
+    .hero h1 { margin: 0; font-size: 2.1rem; color: white; }
+    .hero p { margin: .35rem 0 0; opacity: .9; font-size: 1.02rem; }
+    [data-testid="stMetric"] {
+        background: rgba(128,128,128,0.06);
+        border: 1px solid rgba(128,128,128,0.18);
+        border-radius: 12px; padding: 1rem 1.1rem;
     }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
+    .empty-card {
+        border: 1px solid rgba(128,128,128,0.2); border-radius: 14px;
+        padding: 1.5rem 1.8rem; background: rgba(128,128,128,0.05);
     }
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        padding-left: 20px;
-        padding-right: 20px;
-    }
+    .empty-card h3 { margin-top: 0; }
+    .stTabs [data-baseweb="tab-list"] { gap: 6px; }
+    .stTabs [data-baseweb="tab"] { height: 46px; padding: 0 18px; }
+    .draft-label { font-weight: 600; color: #4f46e5; margin-bottom: .2rem; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🤖 SmartReview-AI Business Intelligence")
-st.markdown("**Transform customer feedback into actionable business decisions**")
 
-# Function to generate sample data
-def generate_sample_data():
-    np.random.seed(42)
-    sample_reviews = [
-        "Excellent product! Highly recommend to everyone. Fast shipping too!",
-        "Product broke after 2 days. Poor quality. Want a refund immediately.",
-        "Good value for money, happy with purchase.",
-        "Wrong item delivered. This is not what I ordered. Very disappointed.",
-        "Amazing quality! Exceeded my expectations. Will buy again.",
-        "Customer service was rude and unhelpful. Product is okay though.",
-        "Perfect! Exactly what I needed. Great quality.",
-        "Waste of money. Cheap materials. Do not buy this product.",
-        "Decent product for the price. Shipping was delayed by a week.",
-        "Outstanding quality and fast shipping! Love it!",
-        "Defective product. Stopped working after one week. Need refund.",
-        "Too small, doesn't fit. Size chart is wrong.",
-        "Overpriced for what you get. Not worth the money.",
-        "Item never arrived. Still waiting after 3 weeks.",
-        "Dangerous product! My child got hurt. This should be recalled.",
-        "Great product but package was damaged during shipping.",
-        "Not as described on website. False advertising.",
-        "Excellent customer service! Product works perfectly.",
-        "Cheaply made. Fell apart immediately. Total waste.",
-        "Five stars! Best purchase I've made this year!"
-    ]
-    
-    data = {
-        'review_text': np.random.choice(sample_reviews, 100),
-        'rating': np.random.choice([1, 2, 3, 4, 5], 100, p=[0.15, 0.15, 0.2, 0.25, 0.25]),
-        'product': np.random.choice(['Laptop Stand', 'Phone Case', 'Wireless Headphones', 'Tablet Cover', 'USB Cable'], 100),
-        'date': pd.date_range('2024-01-01', periods=100),
-        'customer_id': [f'CUST{i:04d}' for i in range(100)]
-    }
-    return pd.DataFrame(data)
+# --- Data loading ------------------------------------------------------------
+@st.cache_data(show_spinner=False)
+def load_sample_data():
+    """Load the bundled realistic demo dataset (with a synthetic fallback)."""
+    try:
+        return pd.read_csv(SAMPLE_CSV)
+    except Exception:
+        rng = np.random.default_rng(42)
+        base = [
+            "Excellent product, highly recommend! Fast shipping too.",
+            "Broke after two days. Poor quality, want a refund.",
+            "Good value for money, happy with the purchase.",
+            "Wrong item delivered, not what I ordered at all.",
+            "Customer service was rude and unhelpful.",
+            "Too small, doesn't fit. The size chart is wrong.",
+            "Item never arrived, still waiting after three weeks.",
+            "Overpriced for what you get, waste of money.",
+        ]
+        return pd.DataFrame({
+            "review_text": rng.choice(base, 100),
+            "rating": rng.choice([1, 2, 3, 4, 5], 100, p=[.15, .15, .2, .25, .25]),
+            "product": rng.choice(["Headphones", "Cable", "Bottle", "Chair"], 100),
+            "date": pd.date_range("2025-01-01", periods=100).astype(str),
+        })
 
-# Function to detect review columns
+
+def read_csv_robust(uploaded_file):
+    """Read an uploaded CSV, tolerating encoding and malformed-row problems."""
+    warnings = []
+    raw = uploaded_file.getvalue()
+    df, last_err = None, None
+    for enc in ("utf-8", "utf-8-sig", "latin-1"):
+        try:
+            df = pd.read_csv(io.BytesIO(raw), encoding=enc)
+            if enc != "utf-8":
+                warnings.append(f"File wasn't UTF-8 — read it as {enc}.")
+            break
+        except UnicodeDecodeError:
+            continue
+        except Exception as e:  # parser error -> retry leniently
+            last_err = e
+            try:
+                df = pd.read_csv(io.BytesIO(raw), encoding=enc, engine="python",
+                                 on_bad_lines="skip")
+                warnings.append("Some malformed rows were skipped during import.")
+                break
+            except Exception as e2:
+                last_err = e2
+                continue
+    if df is None:
+        return None, [f"Couldn't parse this CSV ({last_err})."]
+
+    df.columns = [str(c).strip() for c in df.columns]
+    df = df.dropna(how="all").reset_index(drop=True)
+    if df.empty:
+        return None, ["This file has no usable rows."]
+    return df, warnings
+
+
 def analyze_columns(df):
-    """Detect what columns are available in the dataframe"""
-    column_info = {
-        'total_columns': len(df.columns),
-        'columns': df.columns.tolist(),
-        'has_rating': False,
-        'has_text': False,
-        'text_column': None,
-        'rating_column': None,
-        'numeric_columns': [],
-        'text_columns': []
-    }
-    
-    # Check for rating columns
-    rating_keywords = ['rating', 'score', 'stars', 'rate', 'review_rating']
-    for col in df.columns:
-        if any(keyword in col.lower() for keyword in rating_keywords):
-            column_info['has_rating'] = True
-            column_info['rating_column'] = col
-            break
-    
-    # Check for text columns
-    text_keywords = ['review', 'text', 'comment', 'feedback', 'description', 'content']
-    for col in df.columns:
-        if any(keyword in col.lower() for keyword in text_keywords):
-            column_info['has_text'] = True
-            column_info['text_column'] = col
-            break
-    
-    # Find numeric and text columns
-    for col in df.columns:
-        if df[col].dtype in ['int64', 'float64']:
-            column_info['numeric_columns'].append(col)
-        elif df[col].dtype == 'object':
-            column_info['text_columns'].append(col)
-    
-    return column_info
+    """Detect the review-text and rating columns (with a length-based fallback)."""
+    text_cols = [c for c in df.columns if df[c].dtype == object]
+    info = {"text_column": None, "rating_column": None, "text_columns": text_cols}
 
-# Function to perform analysis
-def perform_analysis(df, col_info):
-    """Perform analysis and store in session state"""
-    analyzer = SimpleAnalyzer()
-    
-    if col_info['has_text']:
-        with st.spinner("🔄 Analyzing reviews for business insights..."):
-            st.session_state.analysis_results = analyzer.analyze_text(df, col_info['text_column'])
-            st.session_state.word_freq = analyzer.get_word_frequency(df, col_info['text_column'])
-            st.session_state.insights = analyzer.get_actionable_insights(
-                df, st.session_state.analysis_results, col_info['text_column']
-            )
-            st.session_state.priority_reviews = analyzer.get_priority_reviews(
-                df, st.session_state.analysis_results, col_info['text_column']
-            )
+    for col in df.columns:
+        if any(k in col.lower() for k in ["rating", "score", "stars", "rate"]):
+            info["rating_column"] = col
+            break
 
-# Sidebar for upload
+    def avg_len(c):
+        return df[c].astype(str).str.len().mean()
+
+    # Prefer text columns whose name signals review content, but skip id-like
+    # columns and, among matches, pick the one with the longest average text.
+    text_keywords = ["review", "text", "comment", "feedback", "description",
+                     "content", "body", "message"]
+    candidates = [c for c in text_cols
+                  if any(k in c.lower() for k in text_keywords)
+                  and not c.lower().endswith("_id") and c.lower() != "id"]
+    if candidates:
+        info["text_column"] = max(candidates, key=avg_len)
+    elif text_cols:  # fallback: the longest free-text column
+        best = max(text_cols, key=avg_len)
+        if avg_len(best) >= 15:
+            info["text_column"] = best
+    return info
+
+
+@st.cache_data(show_spinner=False)
+def analyze(df, text_col):
+    """Run the full analysis pipeline (cached on the data + chosen column)."""
+    results = analyzer.analyze_text(df, text_col)
+    word_freq = analyzer.get_word_frequency(df, text_col)
+    insights = analyzer.get_actionable_insights(df, results, text_col)
+    priority = analyzer.get_priority_reviews(df, results, text_col, top_n=25)
+    return results, word_freq, insights, priority
+
+
+# --- Sidebar: data source ----------------------------------------------------
 with st.sidebar:
-    st.header("📤 Data Upload")
-    
-    # Option to use sample data or upload
-    data_source = st.radio("Choose data source:", ["Upload CSV", "Use Sample Data"])
-    
-    if data_source == "Upload CSV":
-        uploaded_file = st.file_uploader("Upload CSV", type="csv")
-        if uploaded_file:
-            new_df = pd.read_csv(uploaded_file)
-            # Only update if it's a new file
-            if st.session_state.df is None or not new_df.equals(st.session_state.df):
-                st.session_state.df = new_df
-                st.session_state.col_info = analyze_columns(new_df)
-                perform_analysis(st.session_state.df, st.session_state.col_info)
-            st.success(f"✅ Loaded {len(st.session_state.df)} rows")
-    else:
-        if st.button("🎲 Generate Sample Data"):
-            st.session_state.df = generate_sample_data()
-            st.session_state.col_info = analyze_columns(st.session_state.df)
-            perform_analysis(st.session_state.df, st.session_state.col_info)
-            st.success("✅ Sample data with business scenarios generated!")
-    
-    if st.session_state.df is not None:
-        st.divider()
-        st.markdown("### 📊 Quick Stats")
-        st.metric("Total Reviews", len(st.session_state.df))
-        if 'rating' in st.session_state.df.columns:
-            avg_rating = st.session_state.df['rating'].mean()
-            st.metric("Average Rating", f"{avg_rating:.2f} ⭐")
+    st.header("📤 Data")
+    source = st.radio("Data source", ["Use sample data", "Upload CSV"])
 
-# Main area - use session state data
-if st.session_state.df is not None:
-    df = st.session_state.df
-    col_info = st.session_state.col_info
-    analysis_results = st.session_state.analysis_results
-    insights = st.session_state.insights
-    priority_reviews = st.session_state.priority_reviews
-    word_freq = st.session_state.word_freq
-    
-    # Create tabs for different business functions
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "🎯 Business Dashboard",
-        "🚨 Priority Reviews",
-        "💡 Insights & Actions",
-        "📊 Analysis Details",
-        "💾 Export Results"
-    ])
-    
-    with tab1:
-        st.header("Business Overview Dashboard")
-        
-        # Alert box for urgent items
-        if analysis_results and analysis_results['urgent_indices']:
-            st.error(f"⚠️ **URGENT**: {len(analysis_results['urgent_indices'])} reviews need immediate attention!")
-        
-        # Key metrics
-        col1, col2, col3, col4 = st.columns(4)
-        
-        if analysis_results:
-            with col1:
-                st.metric(
-                    "Sentiment Score",
-                    f"{(analysis_results['positive_count']/len(df)*100):.1f}%",
-                    delta=f"{analysis_results['positive_count']} positive",
-                    delta_color="normal"
-                )
-            with col2:
-                st.metric(
-                    "Issues Detected",
-                    len([i for i in analysis_results['issues_found'] if i]),
-                    delta=f"in {len([i for i in analysis_results['issues_found'] if i])} reviews",
-                    delta_color="inverse"
-                )
-            with col3:
-                urgent_count = len(analysis_results['urgent_indices'])
-                st.metric(
-                    "Urgent Reviews",
-                    urgent_count,
-                    delta="Need response today" if urgent_count > 0 else "All clear",
-                    delta_color="inverse"
-                )
-            with col4:
-                response_needed = len([i for i in analysis_results['priority_scores'] if i > 50])
-                st.metric(
-                    "Response Needed",
-                    response_needed,
-                    delta=f"{(response_needed/len(df)*100):.1f}% of reviews",
-                    delta_color="inverse"
-                )
-        
-        # Charts
-        if analysis_results:
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                # Issue breakdown
-                if analysis_results['issue_summary']:
-                    issue_df = pd.DataFrame(
-                        list(analysis_results['issue_summary'].items()),
-                        columns=['Issue Type', 'Count']
-                    )
-                    fig = px.bar(
-                        issue_df,
-                        x='Count',
-                        y='Issue Type',
-                        orientation='h',
-                        title="Issues Requiring Attention",
-                        color='Count',
-                        color_continuous_scale='Reds'
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.info("No specific issues detected")
-            
-            with col2:
-                # Sentiment pie chart
-                sentiment_data = pd.DataFrame({
-                    'Sentiment': ['Positive', 'Negative', 'Neutral'],
-                    'Count': [
-                        analysis_results['positive_count'],
-                        analysis_results['negative_count'],
-                        analysis_results['neutral_count']
-                    ]
-                })
-                fig = px.pie(
-                    sentiment_data,
-                    values='Count',
-                    names='Sentiment',
-                    title="Customer Sentiment",
-                    color_discrete_map={
-                        'Positive': '#4CAF50',
-                        'Negative': '#F44336',
-                        'Neutral': '#FFC107'
-                    }
-                )
-                st.plotly_chart(fig, use_container_width=True)
-    
-    with tab2:
-        st.header("🚨 Reviews Requiring Immediate Attention")
-        
-        if not priority_reviews.empty:
-            st.warning(f"Found {len(priority_reviews)} high-priority reviews that need your attention:")
-            
-            # Filter options
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                issue_filter = st.multiselect(
-                    "Filter by issue type:",
-                    options=['All'] + list(analysis_results['issue_summary'].keys()) if analysis_results else [],
-                    default=['All']
-                )
-            with col2:
-                show_urgent_only = st.checkbox("Show only urgent reviews", value=False, key="urgent_filter")
-            
-            # Filter priority reviews based on selections
-            filtered_reviews = priority_reviews.copy()
-            
-            if show_urgent_only and analysis_results:
-                # Get indices of urgent reviews
-                urgent_indices = analysis_results['urgent_indices']
-                # Filter to show only urgent reviews
-                filtered_reviews = filtered_reviews[filtered_reviews.index.isin(urgent_indices)]
-            
-            if 'All' not in issue_filter and len(issue_filter) > 0:
-                # Filter by selected issues
-                filtered_reviews = filtered_reviews[
-                    filtered_reviews['issues'].apply(
-                        lambda x: any(issue in x for issue in issue_filter)
-                    )
-                ]
-            
-            # Display filtered priority reviews
-            if not filtered_reviews.empty:
-                for idx, row in filtered_reviews.iterrows():
-                    priority = row['priority_score']
-                    
-                    # Color code based on priority
-                    if priority >= 80:
-                        container = st.error
-                        icon = "🔴"
-                    elif priority >= 60:
-                        container = st.warning
-                        icon = "🟡"
-                    else:
-                        container = st.info
-                        icon = "🟢"
-                    
-                    with container(f"{icon} Priority Score: {priority}/100"):
-                        col1, col2 = st.columns([3, 1])
-                        
-                        with col1:
-                            st.write(f"**Customer:** {row.get('customer_id', 'Unknown')}")
-                            if 'product' in row:
-                                st.write(f"**Product:** {row['product']}")
-                            if 'rating' in row:
-                                st.write(f"**Rating:** {'⭐' * int(row['rating'])}")
-                            st.write(f"**Issues:** {row['issues']}")
-                            st.write(f"**Review:** {row[col_info['text_column']]}")
-                        
-                        with col2:
-                            st.write(f"**Sentiment:** {row['sentiment']}")
-                            st.write(f"**Date:** {row.get('date', 'Unknown')}")
-                            if st.button(f"Mark as Resolved", key=f"resolve_{idx}"):
-                                st.success("✓ Marked as resolved")
+    df = None
+    if source == "Upload CSV":
+        uploaded = st.file_uploader("Reviews CSV", type=["csv"])
+        if uploaded is not None:
+            df, warns = read_csv_robust(uploaded)
+            if df is None:
+                for w in warns:
+                    st.error(w)
             else:
-                st.info("No reviews match the selected filters")
+                st.success(f"✅ Loaded {len(df):,} rows")
+                for w in warns:
+                    st.warning(w)
         else:
-            st.info("No priority reviews found")
-    
-    with tab3:
-        st.header("💡 Actionable Business Insights")
-        
-        if insights:
-            # Urgent Actions
-            if insights['urgent_actions']:
-                st.error("🚨 **URGENT ACTIONS REQUIRED**")
-                for action in insights['urgent_actions']:
-                    st.write(f"- {action['description']}")
-                    st.write(f"  **Action:** {action['action']}")
-            
-            # Improvement Areas
-            if insights['improvement_areas']:
-                st.subheader("📈 Top Improvement Areas")
-                for area in insights['improvement_areas']:
-                    with st.expander(f"{area['issue']} - Affecting {area['impact']}"):
-                        st.write(f"**Recommended Action:** {area['action']}")
-                        st.write("**Steps to take:**")
-                        st.write("1. Review all affected products")
-                        st.write("2. Contact relevant department")
-                        st.write("3. Implement corrective measures")
-                        st.write("4. Follow up with affected customers")
-            
-            # Recommendations
-            if insights['recommendations']:
-                st.subheader("💡 Strategic Recommendations")
-                for rec in insights['recommendations']:
-                    st.info(rec)
-            
-            # Action Plan Generator
-            st.subheader("📋 Generated Action Plan")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.write("**Immediate (Today):**")
-                st.write("☐ Respond to urgent reviews")
-                st.write("☐ Contact customers with safety concerns")
-                st.write("☐ Review refund requests")
-            
-            with col2:
-                st.write("**This Week:**")
-                st.write("☐ Address quality control issues")
-                st.write("☐ Review shipping partner performance")
-                st.write("☐ Update product descriptions")
-    
-    with tab4:
-        st.header("📊 Detailed Analysis")
-        
-        if analysis_results:
-            # Word frequency
-            if word_freq:
-                st.subheader("Most Frequently Mentioned Words")
-                word_df = pd.DataFrame(list(word_freq.items()), columns=['Word', 'Frequency'])
-                fig = px.treemap(
-                    word_df,
-                    path=['Word'],
-                    values='Frequency',
-                    title="Word Cloud (Size = Frequency)"
-                )
+            st.caption("CSV with a review-text column (a rating column helps too).")
+    else:
+        df = load_sample_data()
+        st.success(f"✅ {len(df):,} realistic demo reviews loaded")
+
+    text_col = None
+    if df is not None:
+        col_info = analyze_columns(df)
+        st.divider()
+        st.markdown("### 🧭 Columns")
+        options = col_info["text_columns"] or list(df.columns)
+        default = col_info["text_column"] or options[0]
+        text_col = st.selectbox(
+            "Review text column", options,
+            index=options.index(default) if default in options else 0,
+            help="Auto-detected — change it if we picked the wrong column.")
+
+        st.divider()
+        st.markdown("### 📊 Quick stats")
+        st.metric("Total reviews", f"{len(df):,}")
+        rating_col = col_info["rating_column"]
+        if rating_col and pd.api.types.is_numeric_dtype(df[rating_col]):
+            st.metric("Average rating", f"{df[rating_col].mean():.2f} ⭐")
+        st.caption(f"Sentiment engine: {analyzer.backend.upper()}")
+
+
+# --- Hero --------------------------------------------------------------------
+st.markdown("""
+<div class="hero">
+  <h1>🤖 SmartReview-AI</h1>
+  <p>Turn thousands of customer reviews into decisions — sentiment, issues,
+     priorities and ready-to-send replies.</p>
+</div>
+""", unsafe_allow_html=True)
+
+if df is None or not text_col:
+    st.markdown("""
+    <div class="empty-card">
+      <h3>👋 Get started in 5 seconds</h3>
+      <ol>
+        <li>Keep <b>“Use sample data”</b> selected in the sidebar to explore a
+            realistic dataset, or</li>
+        <li>Switch to <b>“Upload CSV”</b> and drop in your own reviews export.</li>
+      </ol>
+      <p>Your file just needs a column of review text; a <code>rating</code>
+         column (1–5) makes the analysis sharper.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.stop()
+
+# --- Analyse (cap very large files for speed) --------------------------------
+if len(df) > MAX_ROWS:
+    st.info(f"Large file — analysing a random sample of {MAX_ROWS:,} of "
+            f"{len(df):,} reviews to keep things fast.")
+    df = df.sample(MAX_ROWS, random_state=0).sort_index().reset_index(drop=True)
+
+with st.spinner("🔄 Analysing reviews…"):
+    analysis_results, word_freq, insights, priority_reviews = analyze(df, text_col)
+
+total = analysis_results["total_reviews"]
+rating_col = analyze_columns(df)["rating_column"]
+
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🎯 Dashboard", "🚨 Priority & Replies", "💡 Insights & Actions",
+    "📊 Analysis Details", "💾 Export",
+])
+
+# --- Tab 1: Dashboard --------------------------------------------------------
+with tab1:
+    st.subheader("Business overview")
+
+    urgent_count = len(analysis_results["urgent_indices"])
+    if urgent_count:
+        st.error(f"⚠️ **URGENT:** {urgent_count} reviews need a response today.")
+
+    c1, c2, c3, c4 = st.columns(4)
+    pos_pct = analysis_results["positive_count"] / total * 100
+    neg_pct = analysis_results["negative_count"] / total * 100
+    issues_ct = len([i for i in analysis_results["issues_found"] if i])
+    resp_needed = len([s for s in analysis_results["priority_scores"] if s > 50])
+    c1.metric("😊 Positive", analysis_results["positive_count"],
+              f"{pos_pct:.0f}%", delta_color="off")
+    c2.metric("😞 Negative", analysis_results["negative_count"],
+              f"{neg_pct:.0f}%", delta_color="off")
+    c3.metric("⚠️ With issues", issues_ct,
+              f"{issues_ct / total * 100:.0f}%", delta_color="off")
+    c4.metric("🚨 Urgent", urgent_count,
+              f"{resp_needed} need a reply", delta_color="off")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if analysis_results["issue_summary"]:
+            issue_df = pd.DataFrame(analysis_results["issue_summary"].items(),
+                                    columns=["Issue Type", "Count"])
+            fig = px.bar(issue_df, x="Count", y="Issue Type", orientation="h",
+                         title="Issues requiring attention", color="Count",
+                         color_continuous_scale="Reds")
+            fig.update_layout(yaxis={"categoryorder": "total ascending"},
+                              margin=dict(l=0, r=0, t=40, b=0))
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No specific issues detected. 🎉")
+    with col2:
+        sentiment_df = pd.DataFrame({
+            "Sentiment": ["Positive", "Negative", "Neutral"],
+            "Count": [analysis_results["positive_count"],
+                      analysis_results["negative_count"],
+                      analysis_results["neutral_count"]],
+        })
+        fig = px.pie(sentiment_df, values="Count", names="Sentiment", hole=0.45,
+                     title="Customer sentiment", color="Sentiment",
+                     color_discrete_map=SENTIMENT_COLORS)
+        fig.update_layout(margin=dict(l=0, r=0, t=40, b=0))
+        st.plotly_chart(fig, use_container_width=True)
+
+# --- Tab 2: Priority queue + AI replies --------------------------------------
+with tab2:
+    st.subheader("🚨 Reviews to action first")
+    st.caption("Ranked by priority score. Each has an editable, AI-drafted reply.")
+
+    if priority_reviews.empty:
+        st.info("No priority reviews found.")
+    else:
+        f1, f2 = st.columns([3, 1])
+        with f1:
+            issue_opts = ["All"] + list(analysis_results["issue_summary"].keys())
+            issue_filter = st.multiselect("Filter by issue", issue_opts,
+                                          default=["All"])
+        with f2:
+            urgent_only = st.checkbox("Urgent only")
+
+        view = priority_reviews.copy()
+        if urgent_only:
+            view = view[view.index.isin(analysis_results["urgent_indices"])]
+        if "All" not in issue_filter and issue_filter:
+            view = view[view["issues"].apply(
+                lambda x: any(i in x for i in issue_filter))]
+
+        if view.empty:
+            st.info("No reviews match the selected filters.")
+        for idx, row in view.head(20).iterrows():
+            score = int(row["priority_score"])
+            icon = "🔴" if score >= 80 else ("🟡" if score >= 50 else "🟢")
+            text = str(row[text_col])
+            title = f"{icon} {score}/100 · {row['sentiment']} · {text[:70]}…"
+            with st.expander(title):
+                meta = []
+                if "product" in row:
+                    meta.append(f"**Product:** {row['product']}")
+                if rating_col and rating_col in row and pd.notna(row[rating_col]):
+                    try:
+                        meta.append("**Rating:** " + "⭐" * int(row[rating_col]))
+                    except (ValueError, TypeError):
+                        pass
+                meta.append(f"**Issues:** {row['issues']}")
+                st.markdown("  ·  ".join(meta))
+                st.markdown(f"> {text}")
+
+                draft = analyzer.draft_response(
+                    sentiment=row["sentiment"],
+                    issues=[i.strip() for i in str(row["issues"]).split(",")],
+                    rating=row.get(rating_col) if rating_col else None,
+                    product=row.get("product"))
+                st.markdown('<div class="draft-label">✍️ Suggested reply '
+                            '(edit before sending)</div>', unsafe_allow_html=True)
+                st.text_area("draft", value=draft, height=110,
+                             key=f"draft_{idx}", label_visibility="collapsed")
+
+# --- Tab 3: Insights ---------------------------------------------------------
+with tab3:
+    st.subheader("💡 Actionable insights")
+    if insights and insights["urgent_actions"]:
+        st.error("🚨 **Urgent actions required**")
+        for a in insights["urgent_actions"]:
+            st.write(f"- {a['description']}")
+
+    if insights and insights["improvement_areas"]:
+        st.markdown("#### 📈 Top improvement areas")
+        for area in insights["improvement_areas"]:
+            with st.expander(f"{area['issue']} — affecting {area['impact']}"):
+                st.write(f"**Recommended action:** {area['action']}")
+                st.write("1. Review affected products\n"
+                         "2. Loop in the relevant team\n"
+                         "3. Implement a fix\n"
+                         "4. Follow up with affected customers")
+
+    if insights and insights["recommendations"]:
+        st.markdown("#### 🧭 Strategic recommendations")
+        for rec in insights["recommendations"]:
+            st.info(rec)
+
+    st.markdown("#### 📋 Suggested action plan")
+    c1, c2 = st.columns(2)
+    c1.markdown("**Today**\n\n- Respond to urgent reviews\n"
+                "- Handle safety & refund requests\n- Reply to 1-star reviews")
+    c2.markdown("**This week**\n\n- Address top quality issues\n"
+                "- Review shipping performance\n- Update product descriptions")
+
+# --- Tab 4: Analysis details -------------------------------------------------
+with tab4:
+    st.subheader("📊 Detailed analysis")
+    if word_freq:
+        st.markdown("#### Most mentioned words")
+        word_df = pd.DataFrame(word_freq.items(), columns=["Word", "Frequency"])
+        fig = px.treemap(word_df, path=["Word"], values="Frequency")
+        fig.update_layout(margin=dict(l=0, r=0, t=10, b=0))
+        st.plotly_chart(fig, use_container_width=True)
+
+    date_col = next((c for c in df.columns if "date" in c.lower()), None)
+    if date_col:
+        try:
+            trend = df.copy()
+            trend["sentiment"] = analysis_results["sentiments"]
+            trend[date_col] = pd.to_datetime(trend[date_col], errors="coerce")
+            trend = trend.dropna(subset=[date_col])
+            daily = (trend.groupby([pd.Grouper(key=date_col, freq="W"), "sentiment"])
+                     .size().reset_index(name="count"))
+            if not daily.empty:
+                st.markdown("#### Sentiment trend over time")
+                fig = px.line(daily, x=date_col, y="count", color="sentiment",
+                              color_discrete_map=SENTIMENT_COLORS, markers=True)
+                fig.update_layout(margin=dict(l=0, r=0, t=10, b=0))
                 st.plotly_chart(fig, use_container_width=True)
-            
-            # Time trend if date column exists
-            if 'date' in df.columns and analysis_results:
-                st.subheader("Sentiment Trend Over Time")
-                trend_df = df.copy()
-                trend_df['sentiment'] = analysis_results['sentiments']
-                trend_df['date'] = pd.to_datetime(trend_df['date'])
-                
-                daily_sentiment = trend_df.groupby(['date', 'sentiment']).size().reset_index(name='count')
-                fig = px.line(
-                    daily_sentiment,
-                    x='date',
-                    y='count',
-                    color='sentiment',
-                    title="Sentiment Trends",
-                    color_discrete_map={
-                        'Positive': '#4CAF50',
-                        'Negative': '#F44336',
-                        'Neutral': '#FFC107'
-                    }
-                )
-                st.plotly_chart(fig, use_container_width=True)
-            
-            # Full data view
-            st.subheader("All Reviews with Analysis")
-            display_df = df.copy()
-            display_df['Sentiment'] = analysis_results['sentiments']
-            display_df['Priority'] = analysis_results['priority_scores']
-            display_df['Issues'] = [', '.join(i) if i else 'None' for i in analysis_results['issues_found']]
-            
-            st.dataframe(
-                display_df.sort_values('Priority', ascending=False),
-                use_container_width=True,
-                height=400
-            )
-    
-    with tab5:
-        st.header("💾 Export Analysis Results")
-        
-        if analysis_results:
-            # Re-initialize analyzer for export
-            analyzer = SimpleAnalyzer()
-            export_df = analyzer.export_analysis(df, analysis_results)
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                csv = export_df.to_csv(index=False)
-                st.download_button(
-                    label="📥 Download Full Analysis (CSV)",
-                    data=csv,
-                    file_name=f"review_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv"
-                )
-            
-            with col2:
-                # Priority reviews only
-                if not priority_reviews.empty:
-                    priority_csv = priority_reviews.to_csv(index=False)
-                    st.download_button(
-                        label="🚨 Download Priority Reviews",
-                        data=priority_csv,
-                        file_name=f"priority_reviews_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        mime="text/csv"
-                    )
-            
-            with col3:
-                # Summary report
-                if insights:
-                    summary = f"""
-SMARTREVIEW-AI BUSINESS REPORT
-Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+        except Exception:
+            pass
+
+    st.markdown("#### All reviews with analysis")
+    display_df = df.copy()
+    display_df["Sentiment"] = analysis_results["sentiments"]
+    display_df["Priority"] = analysis_results["priority_scores"]
+    display_df["Issues"] = [", ".join(i) if i else "None"
+                            for i in analysis_results["issues_found"]]
+    st.dataframe(display_df.sort_values("Priority", ascending=False),
+                 use_container_width=True, height=420)
+
+# --- Tab 5: Export -----------------------------------------------------------
+with tab5:
+    st.subheader("💾 Export results")
+    export_df = analyzer.export_analysis(df, analysis_results)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    c1, c2, c3 = st.columns(3)
+    c1.download_button("📥 Full analysis (CSV)", export_df.to_csv(index=False),
+                       f"review_analysis_{stamp}.csv", "text/csv",
+                       use_container_width=True)
+    if not priority_reviews.empty:
+        c2.download_button("🚨 Priority reviews (CSV)",
+                           priority_reviews.to_csv(index=False),
+                           f"priority_reviews_{stamp}.csv", "text/csv",
+                           use_container_width=True)
+
+    top_issues = "\n".join(f"- {k}: {v} occurrences"
+                           for k, v in list(analysis_results["issue_summary"].items())[:5])
+    recs = "\n".join(f"- {r}" for r in (insights["recommendations"] if insights else []))
+    summary = f"""SMARTREVIEW-AI BUSINESS REPORT
+Generated: {datetime.now():%Y-%m-%d %H:%M}
 
 EXECUTIVE SUMMARY
-Total Reviews Analyzed: {len(df)}
-Positive Sentiment: {analysis_results['positive_count']} ({(analysis_results['positive_count']/len(df)*100):.1f}%)
-Negative Sentiment: {analysis_results['negative_count']} ({(analysis_results['negative_count']/len(df)*100):.1f}%)
-Urgent Reviews: {len(analysis_results['urgent_indices'])}
+Total reviews analysed: {total}
+Positive: {analysis_results['positive_count']} ({pos_pct:.1f}%)
+Negative: {analysis_results['negative_count']} ({neg_pct:.1f}%)
+Urgent reviews: {len(analysis_results['urgent_indices'])}
 
-TOP ISSUES:
-{chr(10).join([f"- {issue}: {count} occurrences" for issue, count in list(analysis_results['issue_summary'].items())[:5]])}
+TOP ISSUES
+{top_issues or '- None detected'}
 
-RECOMMENDATIONS:
-{chr(10).join([f"- {rec}" for rec in insights['recommendations']])}
+RECOMMENDATIONS
+{recs or '- None'}
+"""
+    c3.download_button("📊 Executive summary (TXT)", summary,
+                       f"executive_summary_{stamp}.txt", "text/plain",
+                       use_container_width=True)
+    st.success("✅ Reports ready to download.")
 
-ACTION ITEMS:
-1. Respond to {len(analysis_results['urgent_indices'])} urgent reviews immediately
-2. Address top issue: {list(analysis_results['issue_summary'].keys())[0] if analysis_results['issue_summary'] else 'None'}
-3. Follow up with {analysis_results['negative_count']} dissatisfied customers
-                    """
-                    st.download_button(
-                        label="📊 Download Executive Summary",
-                        data=summary,
-                        file_name=f"executive_summary_{datetime.now().strftime('%Y%m%d')}.txt",
-                        mime="text/plain"
-                    )
-            
-            st.success("✅ Reports ready for download!")
-else:
-    st.info("👈 Please upload a CSV file or generate sample data to begin analysis")
-
-# Footer
 st.divider()
-st.markdown("""
-    <div style='text-align: center; color: #888; padding: 20px;'>
-        SmartReview-AI v2.0 | Business Intelligence Edition | Built with Streamlit
-    </div>
-""", unsafe_allow_html=True)
+st.caption("SmartReview-AI · Business Intelligence Edition · Built with Streamlit "
+           f"& {analyzer.backend.upper()} sentiment analysis")
