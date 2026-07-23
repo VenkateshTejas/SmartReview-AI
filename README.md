@@ -5,19 +5,22 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](https://github.com/VenkateshTejas/smartreview-ai)
 
-An AI-powered review analysis platform that transforms thousands of customer reviews into actionable business insights in under 60 seconds.
+A review-analysis platform that turns customer feedback into prioritized, actionable insights — sentiment, recurring issues, and a triage queue with suggested replies.
 
 ## 🎯 Executive Summary
 
-SmartReview-AI addresses the $75 billion problem of inefficient review management in e-commerce. By leveraging advanced NLP and machine learning, the platform automates the analysis of customer feedback, reducing response time by 75% and increasing positive review rates by 23%.
+SmartReview-AI helps e-commerce teams keep up with customer feedback. Instead of reading reviews one by one, it classifies sentiment, detects recurring issues (quality, shipping, sizing, safety, pricing, and more), and surfaces the reviews that need a response first — each with a suggested reply. It's built as a product-management + engineering portfolio project; the `docs/` folder holds the PRD, personas, and research behind it.
 
 ## 📊 The Problem
 
-- **50+ hours/month** wasted on manual review analysis
-- **73% of insights** missed that could prevent returns
-- **14-day average** response time to customer feedback
-- **22% of customers** lost after one negative review
-- **$75 billion** annual loss in e-commerce due to poor review management
+For a store with a steady stream of reviews, keeping up by hand doesn't scale:
+
+- Reading and triaging every review manually gets slower as volume grows.
+- Recurring problems (a sizing issue, a bad shipping lane, a quality defect) are easy to miss when feedback is scattered across hundreds of reviews.
+- Reviews that need a fast response — refunds, safety complaints — can sit unanswered.
+- There's rarely a single view of *what* customers are unhappy about and *which* reviews to act on first.
+
+SmartReview-AI focuses on that last mile: turning a pile of reviews into a ranked, categorized to-do list.
 
 ## 💡 The Solution
 
@@ -35,7 +38,7 @@ SmartReview-AI provides:
 - ✅ Sentiment classification with VADER (tuned for short review text)
 - ✅ Automatic issue detection (quality, shipping, sizing, safety, pricing & more)
 - ✅ Priority scoring to triage the reviews that matter most
-- ✅ **AI-drafted reply suggestions** tailored to each review's issue
+- ✅ **Suggested reply templates** tailored to each review's detected issue
 - ✅ Trend & word-frequency visualization dashboard
 - ✅ Robust CSV upload (handles odd encodings & malformed rows) + a bundled demo dataset
 - ✅ CSV / executive-summary export
@@ -140,14 +143,17 @@ review_text: The review content
 rating: Numerical rating (optional)
 product_id: Product identifier (optional)
 
-📊 Business Impact & ROI
-MetricBeforeAfterImprovementAnalysis Time50 hrs/month5 hrs/month90% reductionResponse Time14 days<24 hours93% fasterIssues Detected27%89%230% increasePositive ReviewsBaseline+23%23% increaseReturn RateBaseline-15%15% reduction
-Cost Savings (Annual)
+📊 Intended Impact
 
-Labor: $36,000 (45 hrs/month @ $65/hr)
-Reduced Returns: $125,000 (avg e-commerce)
-Customer Retention: $85,000
-Total ROI: 380% Year 1
+> ⚠️ This is a portfolio project, not a deployed commercial product. The framing below describes the value it's *designed* to deliver — these are not measured results or real customer outcomes.
+
+The goal is to shrink the gap between "a customer left feedback" and "someone acted on it":
+
+- **Less manual triage** — sentiment, issue category, and priority are computed for every review, so a person works from a ranked shortlist instead of reading everything.
+- **Faster response to what matters** — urgent reviews (refund, safety, wrong item) float to the top, each with a ready-to-edit reply.
+- **Recurring-issue visibility** — the dashboard shows which categories (quality, shipping, sizing, …) drive negative sentiment, so fixes target the biggest sources rather than one-off complaints.
+
+Actual time or cost savings would depend entirely on a store's review volume and existing workflow.
 
 🎯 Target Users
 Primary Users
@@ -194,12 +200,12 @@ Demo video creation
 Launch preparation
 
 🧪 Testing
-An automated pytest suite is planned for the development phase (Week 3). Until then, you can sanity-check the analyzer directly:
+
+A pytest suite covers the analyzer — sentiment labelling, issue detection across all categories, priority scoring, reply drafting, and edge cases (empty/missing columns).
 
 ```bash
-python -c "import sys; sys.path.insert(0,'src'); import pandas as pd; from analyzer import ReviewAnalyzer; \
-df=pd.DataFrame({'review_text':['Broke after 2 days, want a refund']}); \
-print(ReviewAnalyzer().analyze_text(df,'review_text'))"
+pip install -r requirements-dev.txt
+pytest
 ```
 
 📖 Documentation
