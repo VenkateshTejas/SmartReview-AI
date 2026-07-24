@@ -53,8 +53,9 @@ st.markdown("""
 
     /* strip default Streamlit chrome for a cleaner product surface */
     [data-testid="stHeader"] { background:transparent; }
-    [data-testid="stToolbar"], [data-testid="stDecoration"],
-    #MainMenu, footer { display:none !important; }
+    /* hide chrome, but keep stToolbar so the sidebar expand arrow stays clickable */
+    [data-testid="stToolbarActions"], [data-testid="stStatusWidget"],
+    [data-testid="stDecoration"], #MainMenu, footer { display:none !important; }
 
     .block-container { padding-top:2rem; padding-bottom:4rem; max-width:1200px; }
 
