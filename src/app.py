@@ -10,7 +10,8 @@ from streamlit.components.v1 import html as st_html
 
 from analyzer import ReviewAnalyzer
 
-st.set_page_config(page_title="SmartReview-AI", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="SmartReview-AI", page_icon="🤖", layout="wide",
+                   initial_sidebar_state="expanded")
 
 # --- Config ------------------------------------------------------------------
 SAMPLE_CSV = os.path.join(os.path.dirname(__file__), "..", "data", "sample",
@@ -185,6 +186,42 @@ st.markdown("""
     }
     [class*="st-key-navrow"] [data-testid="stElementContainer"] { width:auto !important; }
     [class*="st-key-navrow"] button { white-space:nowrap; }
+
+    /* --- extra polish: staggered entrances, card hovers, decorative graphic --- */
+
+    /* KPI tiles fade + stagger in */
+    [class*="st-key-kpitile_"] button { animation:fadeUp .5s ease both; }
+    [class*="st-key-kpitile_positive"] button { animation-delay:.04s; }
+    [class*="st-key-kpitile_negative"] button { animation-delay:.10s; }
+    [class*="st-key-kpitile_issues"]   button { animation-delay:.16s; }
+    [class*="st-key-kpitile_urgent"]   button { animation-delay:.22s; }
+
+    /* charts fade in */
+    [data-testid="stPlotlyChart"] { animation:fadeUp .55s ease both; }
+
+    /* Welcome feature cards: entrance + hover lift */
+    [class*="st-key-featcard_"] {
+        border-radius:14px !important; animation:fadeUp .5s ease both;
+        transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    [class*="st-key-featcard_"]:hover {
+        transform:translateY(-3px); box-shadow:0 10px 26px rgba(15,23,42,.08);
+        border-color:rgba(99,102,241,.45) !important;
+    }
+
+    /* decorative soft gradient blob drifting behind the hero */
+    .hero { position:relative; z-index:0; }
+    .hero::after {
+        content:""; position:absolute; top:-70px; right:-10px; width:340px; height:340px;
+        background:radial-gradient(circle, rgba(99,102,241,.18),
+                   rgba(14,165,233,.10) 45%, transparent 70%);
+        filter:blur(38px); z-index:-1; pointer-events:none;
+        animation:float 9s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%,100% { transform:translate(0,0) scale(1); }
+        50%     { transform:translate(-18px,16px) scale(1.07); }
+    }
 
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation:none !important; transition:none !important; }
@@ -443,9 +480,9 @@ if nav == "Welcome":
         ("Drill-down analytics",
          "Click any KPI to see the reviews behind it, plus word cloud and sentiment trends."),
     ]
-    for col, (title, desc) in zip(st.columns(4), features):
+    for _i, (col, (title, desc)) in enumerate(zip(st.columns(4), features)):
         with col:
-            with st.container(border=True):
+            with st.container(border=True, key=f"featcard_{_i}"):
                 st.markdown(f"**{title}**")
                 st.caption(desc)
 
