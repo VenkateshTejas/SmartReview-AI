@@ -242,6 +242,28 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# The browser remembers a collapsed sidebar and overrides initial_sidebar_state,
+# so force it open once per session — otherwise the Data/Columns pane can hide.
+if not st.session_state.get("_sidebar_shown"):
+    st.session_state._sidebar_shown = True
+    st_html(
+        """
+        <script>
+        const doc = window.parent.document;
+        function openSidebar() {
+            const sb = doc.querySelector('[data-testid="stSidebar"]');
+            if (!sb || sb.getAttribute('aria-expanded') !== 'false') return;
+            const btn = doc.querySelector('[data-testid="stExpandSidebarButton"]')
+                     || doc.querySelector('[data-testid="stSidebar"] '
+                        + '[data-testid="stBaseButton-headerNoPadding"]');
+            if (btn) btn.click();
+        }
+        [150, 500, 1200].forEach(t => setTimeout(openSidebar, t));
+        </script>
+        """,
+        height=0,
+    )
+
 
 def style_fig(fig, show_legend=True):
     """Apply the dark theme to a Plotly figure so charts match the app."""
