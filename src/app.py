@@ -199,15 +199,28 @@ st.markdown("""
     /* charts fade in */
     [data-testid="stPlotlyChart"] { animation:fadeUp .55s ease both; }
 
-    /* Welcome feature cards: entrance + hover lift */
-    [class*="st-key-featcard_"] {
-        border-radius:14px !important; animation:fadeUp .5s ease both;
+    /* Welcome feature cards — CSS grid forces equal heights (no ragged bottoms) */
+    .feature-grid {
+        display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem;
+        margin:1.25rem 0 .5rem;
+    }
+    .feature-card {
+        background:var(--surface); border:1px solid var(--border); border-radius:14px;
+        padding:1.1rem 1.25rem; animation:fadeUp .5s ease both;
         transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
-    [class*="st-key-featcard_"]:hover {
-        transform:translateY(-3px); box-shadow:0 10px 26px rgba(15,23,42,.08);
-        border-color:rgba(99,102,241,.45) !important;
+    .feature-card:nth-child(1){ animation-delay:.03s; }
+    .feature-card:nth-child(2){ animation-delay:.09s; }
+    .feature-card:nth-child(3){ animation-delay:.15s; }
+    .feature-card:nth-child(4){ animation-delay:.21s; }
+    .feature-card:hover {
+        transform:translateY(-3px); border-color:rgba(99,102,241,.45);
+        box-shadow:0 10px 26px rgba(15,23,42,.08);
     }
+    .feature-card h4 { margin:0 0 .45rem; font-size:.95rem; font-weight:700;
+        color:var(--text); letter-spacing:-.01em; }
+    .feature-card p { margin:0; color:var(--muted); font-size:.85rem; line-height:1.45; }
+    @media (max-width: 820px) { .feature-grid { grid-template-columns:repeat(2, 1fr); } }
 
     /* decorative soft gradient blob drifting behind the hero */
     .hero { position:relative; z-index:0; }
@@ -480,11 +493,10 @@ if nav == "Welcome":
         ("Drill-down analytics",
          "Click any KPI to see the reviews behind it, plus word cloud and sentiment trends."),
     ]
-    for _i, (col, (title, desc)) in enumerate(zip(st.columns(4), features)):
-        with col:
-            with st.container(border=True, key=f"featcard_{_i}"):
-                st.markdown(f"**{title}**")
-                st.caption(desc)
+    cards_html = "".join(f'<div class="feature-card"><h4>{t}</h4><p>{d}</p></div>'
+                         for t, d in features)
+    st.markdown(f'<div class="feature-grid">{cards_html}</div>',
+                unsafe_allow_html=True)
 
     st.markdown("#### How to use it")
     st.markdown(
@@ -726,11 +738,11 @@ if nav == "Export":
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     c1, c2, c3 = st.columns(3)
-    c1.download_button("Download full analysis (CSV)", export_df.to_csv(index=False),
+    c1.download_button("Full analysis (CSV)", export_df.to_csv(index=False),
                        f"review_analysis_{stamp}.csv", "text/csv",
                        use_container_width=True)
     if not priority_reviews.empty:
-        c2.download_button("Download priority reviews (CSV)",
+        c2.download_button("Priority reviews (CSV)",
                            priority_reviews.to_csv(index=False),
                            f"priority_reviews_{stamp}.csv", "text/csv",
                            use_container_width=True)
@@ -755,7 +767,7 @@ TOP ISSUES
 RECOMMENDATIONS
 {recs or '- None'}
 """
-    c3.download_button("Download executive summary (TXT)", summary,
+    c3.download_button("Executive summary (TXT)", summary,
                        f"executive_summary_{stamp}.txt", "text/plain",
                        use_container_width=True)
     st.success("Reports ready to download.")
