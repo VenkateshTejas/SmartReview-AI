@@ -1,5 +1,7 @@
 import io
 import os
+import random
+import re
 from datetime import datetime
 
 import numpy as np
@@ -188,6 +190,28 @@ st.markdown("""
     [class*="st-key-navrow"] [data-testid="stElementContainer"] { width:auto !important; }
     [class*="st-key-navrow"] button { white-space:nowrap; }
 
+    /* word cloud: buttons flowing in a centred, wrapping cloud */
+    [class*="st-key-wordcloud"] {
+        flex-direction:row !important; flex-wrap:wrap; gap:.35rem 1.15rem;
+        align-items:center; justify-content:center; text-align:center;
+        min-height:300px; padding:2.75rem 2rem; background:var(--surface);
+        border:1px solid var(--border); border-radius:16px;
+        box-shadow:0 1px 2px rgba(15,23,42,.04); animation:fadeUp .55s ease both;
+    }
+    [class*="st-key-wordcloud"] [data-testid="stElementContainer"] { width:auto !important; }
+    [class*="st-key-wc_"] button {
+        background:transparent !important; border:none !important;
+        box-shadow:none !important; padding:.05rem .25rem !important;
+        min-height:0 !important; line-height:1.1;
+        transition:transform .15s ease, filter .15s ease;
+    }
+    [class*="st-key-wc_"] button:hover {
+        transform:translateY(-2px) scale(1.08); filter:brightness(1.08);
+    }
+    [class*="st-key-wc_"] button p {
+        margin:0; font-weight:700; letter-spacing:-.01em; line-height:1.05;
+    }
+
     /* --- extra polish: staggered entrances, card hovers, decorative graphic --- */
 
     /* KPI tiles fade + stagger in */
@@ -285,6 +309,61 @@ def style_fig(fig, show_legend=True):
     return fig
 
 
+def pick_chart(df, label_col, value_col, *, title, color_scale,
+               allow_treemap=False):
+    """Pick the chart *form* that suits the data's shape instead of hardcoding
+    one. Returns ``(fig, form, reason)`` where ``reason`` is a short caption
+    explaining the choice, so it reads as intentional rather than arbitrary.
+
+    Rules (match the mark to how many categories the data actually has):
+      * many labels + ``allow_treemap`` -> treemap (size encodes magnitude)
+      * >15 categories                  -> horizontal bar, top 12 + "Other"
+      * 6-15 categories                 -> horizontal bar (labels stay readable)
+      * <=5 categories                  -> vertical bar (cleanest comparison)
+    """
+    n = len(df)
+    srt = df.sort_values(value_col, ascending=False).reset_index(drop=True)
+
+    # Treemap only earns its keep with many labels whose size carries meaning.
+    if allow_treemap and n > 12:
+        fig = px.treemap(srt, path=[label_col], values=value_col,
+                         color=value_col, color_continuous_scale=color_scale,
+                         title=title)
+        fig.update_traces(marker=dict(cornerradius=6,
+                                      line=dict(color="#FFFFFF", width=2)),
+                          textfont=dict(family="Inter", color="#1E293B", size=14))
+        fig.update_layout(coloraxis_showscale=False)
+        return fig, "treemap", f"{n} labels → treemap packs many by size"
+
+    # Too many bars to read: keep the head, bucket the long tail into "Other".
+    grouped = False
+    if n > 15:
+        tail = srt.iloc[12:][value_col].sum()
+        srt = pd.concat([srt.head(12),
+                         pd.DataFrame({label_col: ["Other"], value_col: [tail]})],
+                        ignore_index=True)
+        grouped = True
+
+    if len(srt) <= 5:
+        fig = px.bar(srt, x=label_col, y=value_col, title=title,
+                     color=value_col, color_continuous_scale=color_scale)
+        fig.update_layout(coloraxis_showscale=False,
+                          xaxis={"categoryorder": "total descending"})
+        fig.update_traces(marker_line_width=0)
+        return (fig, "bar-v",
+                f"{len(srt)} categories → vertical bars compare cleanly")
+
+    fig = px.bar(srt, x=value_col, y=label_col, orientation="h", title=title,
+                 color=value_col, color_continuous_scale=color_scale)
+    fig.update_layout(coloraxis_showscale=False,
+                      yaxis={"categoryorder": "total ascending"})
+    fig.update_traces(marker_line_width=0)
+    reason = (f"top 12 of {n} + Other → horizontal bars stay readable"
+              if grouped else
+              f"{len(srt)} categories → horizontal bars keep labels readable")
+    return fig, "bar-h", reason
+
+
 def open_detail(category):
     """Tile/chip click -> jump to Analysis Details with the table pre-filtered."""
     st.session_state.nav = "Analysis Details"
@@ -294,6 +373,44 @@ def open_detail(category):
 
 def _set(state_key, value):
     st.session_state[state_key] = value
+
+
+# On-brand palette for the word cloud (indigo / violet / sky / slate).
+WORDCLOUD_PALETTE = ["#4F46E5", "#6366F1", "#818CF8", "#0EA5E9",
+                     "#0284C7", "#7C3AED", "#64748B"]
+
+
+def render_word_cloud(freq):
+    """Render the most-mentioned words as a clickable cloud. Each word is a real
+    button (font-size encodes frequency, colour adds variety); clicking it jumps
+    to the table pre-filtered to reviews that mention that word."""
+    items = list(freq.items())
+    counts = [c for _, c in items]
+    lo, hi = min(counts), max(counts)
+    span = (hi - lo) or 1  # avoid /0 when every word ties
+
+    # Precompute a per-word size + colour, then emit one CSS block for them all.
+    styled, rules = [], []
+    for i, (word, count) in enumerate(items):
+        slug = re.sub(r"[^A-Za-z0-9]", "-", word)
+        key = f"wc_{i}_{slug}"
+        # sqrt curve so the busiest words pop without dwarfing the long tail
+        t = ((count - lo) / span) ** 0.5
+        size = 0.9 + t * 3.1                            # 0.9rem … 4.0rem
+        color = WORDCLOUD_PALETTE[hash(word) % len(WORDCLOUD_PALETTE)]
+        rules.append(
+            f'[class*="st-key-{key}"] button p {{'
+            f' font-size:{size:.2f}rem !important; color:{color}; }}')
+        styled.append((key, word, count))
+
+    # Interleave sizes for a cloud-like scatter instead of big-to-small.
+    random.Random(7).shuffle(styled)
+
+    st.markdown("<style>" + "".join(rules) + "</style>", unsafe_allow_html=True)
+    with st.container(key="wordcloud"):
+        for key, word, count in styled:
+            st.button(word, key=key, on_click=open_detail, args=(word,),
+                      help=f"{count} mentions · click to filter the table")
 
 
 # --- Data loading ------------------------------------------------------------
@@ -388,7 +505,7 @@ def analyze_columns(df):
 def analyze(df, text_col):
     """Run the full analysis pipeline (cached on the data + chosen column)."""
     results = analyzer.analyze_text(df, text_col)
-    word_freq = analyzer.get_word_frequency(df, text_col)
+    word_freq = analyzer.get_word_frequency(df, text_col, top_n=40)
     insights = analyzer.get_actionable_insights(df, results, text_col)
     priority = analyzer.get_priority_reviews(df, results, text_col, top_n=25)
     return results, word_freq, insights, priority
@@ -563,19 +680,21 @@ if nav == "Dashboard":
         if analysis_results["issue_summary"]:
             issue_df = pd.DataFrame(analysis_results["issue_summary"].items(),
                                     columns=["Issue Type", "Count"])
-            fig = px.bar(issue_df, x="Count", y="Issue Type", orientation="h",
-                         title="Issues requiring attention", color="Count",
-                         color_continuous_scale=["#FCA5A5", "#DC2626"])
-            fig.update_layout(yaxis={"categoryorder": "total ascending"},
-                              coloraxis_showscale=False)
-            fig.update_traces(marker_line_width=0)
+            fig, _form, _why = pick_chart(
+                issue_df, "Issue Type", "Count",
+                title="Issues requiring attention",
+                color_scale=["#FCA5A5", "#DC2626"])
             ev = st.plotly_chart(style_fig(fig, show_legend=False),
                             use_container_width=True, on_select="rerun",
                             key="bar_sel")
-            st.caption("Click a bar to open its reviews.")
+            st.caption(f"Click a bar to open its reviews · {_why}")
             _bpts = (ev or {}).get("selection", {}).get("points", [])
             if _bpts:
-                _issue = _bpts[0].get("label") or _bpts[0].get("y")
+                # category sits on y (horizontal), x (vertical), or label
+                _issue = (_bpts[0].get("label") or _bpts[0].get("y")
+                          or _bpts[0].get("x"))
+                if _issue == "Other":
+                    _issue = None  # bucketed tail isn't a real filter target
                 if _issue and st.session_state.get("_bar_handled") != _issue:
                     st.session_state._bar_handled = _issue
                     open_detail(_issue)
@@ -689,16 +808,8 @@ if nav == "Analysis Details":
     st.subheader("Detailed analysis")
     if word_freq:
         st.markdown("#### Most mentioned words")
-        word_df = pd.DataFrame(word_freq.items(), columns=["Word", "Frequency"])
-        fig = px.treemap(word_df, path=["Word"], values="Frequency",
-                         color="Frequency",
-                         color_continuous_scale=["#EEF2FF", "#A5B4FC"])
-        fig.update_traces(marker=dict(cornerradius=6,
-                                      line=dict(color="#FFFFFF", width=2)),
-                          textfont=dict(family="Inter", color="#1E293B", size=14))
-        fig.update_layout(coloraxis_showscale=False)
-        st.plotly_chart(style_fig(fig, show_legend=False),
-                        use_container_width=True)
+        render_word_cloud(word_freq)
+        st.caption("Click any word to see the reviews that mention it below.")
 
     date_col = next((c for c in df.columns if "date" in c.lower()), None)
     if date_col:
@@ -741,6 +852,9 @@ if nav == "Analysis Details":
         display_df = display_df[display_df.index.isin(analysis_results["urgent_indices"])]
     elif flt in analyzer.ISSUE_RULES:      # a specific issue category (bar click)
         display_df = display_df[[flt in i for i in analysis_results["issues_found"]]]
+    elif flt != "All":                     # a word (clicked in the word chart)
+        display_df = display_df[display_df[text_col].astype(str).str.contains(
+            rf"\b{re.escape(flt)}\b", case=False, na=False)]
 
     suffix = "" if flt == "All" else f" · {flt}"
     st.caption(f"Showing {len(display_df):,} of {total:,} reviews{suffix}")
