@@ -874,6 +874,47 @@ if nav == "Export":
     export_df = analyzer.export_analysis(df, analysis_results)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    # --- Executive PDF report (headline export) ------------------------------
+    st.markdown("#### Executive PDF report")
+    st.caption("A share-ready brief: headline metrics, sentiment & trend "
+               "charts, issues rolled up with recommended actions, a "
+               "per-product breakdown, strategic recommendations, an action "
+               "plan, and a priority queue with ready-to-send draft replies.")
+
+    date_col_x = next((c for c in df.columns if "date" in c.lower()), None)
+    product_col_x = "product" if "product" in df.columns else None
+    # Build once per dataset/config, then reuse across reruns.
+    pdf_sig = (len(df), text_col, rating_col, total,
+               analysis_results["positive_count"],
+               analysis_results["negative_count"])
+    if st.session_state.get("_pdf_sig") != pdf_sig:
+        with st.spinner("Building PDF report…"):
+            try:
+                import report  # lazy: pulls in matplotlib/reportlab on demand
+                st.session_state._pdf_bytes = report.build_pdf(
+                    df=df, analysis_results=analysis_results, insights=insights,
+                    priority_reviews=priority_reviews, word_freq=word_freq,
+                    text_col=text_col, rating_col=rating_col,
+                    backend=analyzer.backend,
+                    draft_response=analyzer.draft_response,
+                    action_for_issue=analyzer.get_action_for_issue,
+                    product_col=product_col_x, date_col=date_col_x)
+                st.session_state._pdf_sig = pdf_sig
+                st.session_state._pdf_error = None
+            except Exception as e:  # never let a report error break the tab
+                st.session_state._pdf_bytes = None
+                st.session_state._pdf_error = str(e)
+
+    if st.session_state.get("_pdf_bytes"):
+        st.download_button(
+            "📄  Download PDF report", st.session_state._pdf_bytes,
+            f"smartreview_report_{stamp}.pdf", "application/pdf",
+            type="primary", use_container_width=True)
+    elif st.session_state.get("_pdf_error"):
+        st.warning(f"Couldn't build the PDF report: {st.session_state._pdf_error}")
+
+    st.divider()
+    st.markdown("#### Data exports")
     c1, c2, c3 = st.columns(3)
     c1.download_button("Full analysis (CSV)", export_df.to_csv(index=False),
                        f"review_analysis_{stamp}.csv", "text/csv",
