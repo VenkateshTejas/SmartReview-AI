@@ -123,7 +123,9 @@ Navigate to http://localhost:8501
 
 ### ☁️ Deploy for free
 
-- **Streamlit Community Cloud** — main file `src/app.py`, branch `main`.
+- **Streamlit Community Cloud** — main file `src/app.py`, branch `main`. A scheduled
+  GitHub Action ([`keep-warm.yml`](.github/workflows/keep-warm.yml)) opens the app in
+  a headless browser every 4h so it doesn't fall asleep between visitors.
 - **Render** — a [`render.yaml`](render.yaml) blueprint is included. In the Render
   dashboard choose **New → Blueprint** and pick this repo; it builds on the free
   tier. (Free services sleep after ~15 min idle and cold-start on the next visit.)
